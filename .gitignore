@@ -9,7 +9,7 @@
 
 # Node modules and dependency files
 /node_modules/
-/package-lock.json
+# package-lock.json SÍ se versiona: el CI instala con `npm ci` y necesita el archivo.
 /yarn.lock
 
 # Environment files
