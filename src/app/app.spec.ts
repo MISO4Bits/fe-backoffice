@@ -108,7 +108,7 @@ describe('Ingreso y navegación de BITS-363', () => {
 
   it.each([
     ['limite', 'Demasiados intentos.'],
-    ['integracion-pendiente', 'El inicio de sesión aún no está disponible.'],
+    ['sin-rol', 'Tu cuenta no tiene un rol habilitado'],
     ['no-disponible', 'No pudimos iniciar sesión.'],
   ] as const)('muestra el estado %s sin abrir sesión', async (motivo, texto) => {
     ingresar.mockRejectedValue(new FalloIngreso(motivo));
@@ -200,7 +200,7 @@ describe('Ingreso y navegación de BITS-363', () => {
   it('rechaza un rol inesperado del adaptador', async () => {
     ingresar.mockResolvedValue({ ...cuenta('ADMIN'), rol: 'CLIENTE' });
     await expect(sesion.ingresar('cliente@correo.com', 'clave')).rejects.toMatchObject({
-      motivo: 'portal',
+      motivo: 'sin-rol',
     });
     expect(sesion.cuenta()).toBeNull();
   });
