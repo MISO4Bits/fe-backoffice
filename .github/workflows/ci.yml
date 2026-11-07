@@ -1,0 +1,146 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+    tags: ["v*.*.*"]
+  pull_request:
+    branches: [main, develop]
+  # Disparo manual: permite reconstruir y publicar una rama o tag concreto desde la
+  # pestaña Actions sin necesidad de un push.
+  workflow_dispatch:
+
+env:
+  NODE_VERSION: "22"
+
+jobs:
+  # Required check. Usa el binario de gitleaks directo, no la GitHub Action
+  # oficial (gitleaks/gitleaks-action): esa exige licencia de pago a partir
+  # del segundo repositorio de una organización.
+  gitleaks:
+    name: gitleaks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Instalar gitleaks
+        run: |
+          curl -sSfL -o gitleaks.tar.gz \
+            https://github.com/gitleaks/gitleaks/releases/download/v8.30.1/gitleaks_8.30.1_linux_x64.tar.gz
+          tar -xzf gitleaks.tar.gz gitleaks
+
+      - name: Escanear historial
+        run: ./gitleaks detect --source . --no-banner -v --config .gitleaks.toml
+
+  # Required check. Lint (ESLint) + formato (Prettier) + pruebas unitarias
+  # (Vitest) con cobertura.
+  quality:
+    name: quality
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: ESLint
+        run: npm run lint
+
+      - name: Prettier — formato
+        run: npm run format:check
+
+      - name: Pruebas + cobertura (gate 80%)
+        run: npm test -- --watch=false
+
+      - name: Subir reporte de cobertura
+        uses: actions/upload-artifact@v7
+        with:
+          name: coverage-lcov
+          path: coverage/fe-backoffice-base/lcov.info
+          retention-days: 1
+
+  # Required check. Espera el quality gate de SonarQube Cloud.
+  sonar:
+    name: sonar
+    runs-on: ubuntu-latest
+    needs: quality
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Descargar reporte de cobertura
+        uses: actions/download-artifact@v8
+        with:
+          name: coverage-lcov
+          path: coverage/fe-backoffice-base
+
+      - name: SonarQube Cloud Scan
+        uses: SonarSource/sonarqube-scan-action@v7
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+  # Publica el backoffice en línea (Cloud Storage + Cloud CDN, el mismo balanceador del portal;
+  # DI-012). Solo al hacer push a develop, y solo si pasaron todos los checks. No hace falta
+  # invalidar la caché de la CDN: index.html va con no-store y los .js/.css llevan hash en el
+  # nombre, así que cada build trae archivos nuevos.
+  deploy:
+    name: deploy
+    runs-on: ubuntu-latest
+    needs: [gitleaks, quality, sonar]
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/develop'
+    permissions:
+      contents: read
+      id-token: write # requerido por google-github-actions/auth (WIF)
+    env:
+      BUCKET: gs://solventa-dev-backoffice
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      # Todavía sin configuración de la URL de la API por ambiente: se agrega con una
+      # configuración `dev` (reemplazo de archivo), como en fe-web, cuando el backoffice llame al BFF.
+      - name: Build de producción
+        run: npm run build -- --configuration=production
+
+      - id: auth
+        name: Autenticar contra GCP (Workload Identity Federation)
+        uses: google-github-actions/auth@v3
+        with:
+          workload_identity_provider: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ vars.GCP_SERVICE_ACCOUNT }}
+
+      - uses: google-github-actions/setup-gcloud@v3
+
+      - name: Publicar archivos estáticos
+        working-directory: dist/fe-backoffice-base/browser
+        run: |
+          # 1) Todo menos index.html, con caché corta (assets sin hash).
+          #    Se borra del bucket lo que ya no existe en el build.
+          gcloud storage rsync . "${BUCKET}" --recursive \
+            --delete-unmatched-destination-objects \
+            --exclude='^index\.html$' \
+            --cache-control="public,max-age=300"
+          # 2) .js y .css llevan hash en el nombre: caché de un año.
+          gcloud storage cp ./*.js ./*.css "${BUCKET}/" \
+            --cache-control="public,max-age=31536000,immutable"
+          # 3) index.html al final y sin caché: es lo que apunta al build nuevo.
+          #    "no-store" y no "no-cache": con "no-cache" la CDN lo guarda y lo revalida, y la
+          #    respuesta revalidada que el balanceador entrega para una ruta de Angular sale con el
+          #    cuerpo vacío (BITS-208). Con "no-store" la CDN nunca lo guarda y siempre llega completo.
+          gcloud storage cp index.html "${BUCKET}/index.html" \
+            --cache-control="no-store"

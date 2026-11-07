@@ -8,10 +8,14 @@ import { authInterceptor } from './core/auth/auth.interceptor';
 import { routes } from './app.routes';
 
 export const appConfig: ApplicationConfig = {
+<<<<<<< HEAD
   providers: [
     provideBrowserGlobalErrorListeners(),
     provideRouter(routes),
     provideHttpClient(withInterceptors([authInterceptor])),
     { provide: AUTH_GATEWAY, useExisting: HttpAuthGateway },
   ],
+=======
+  providers: [provideBrowserGlobalErrorListeners(), provideRouter(routes)],
+>>>>>>> develop
 };
