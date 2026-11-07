@@ -1,0 +1,19 @@
+[extend]
+useDefault = true
+
+[allowlist]
+description = """
+Identificadores públicos conocidos, no secretos.
+
+- La clave de proyecto de SonarQube Cloud.
+- Las claves de archivo de Figma. Aparecen en la URL de cualquier archivo,
+  en Confluence y en Jira, y no dan acceso por sí solas: Figma exige sesión
+  y permiso sobre el archivo. La detección las marca solo por su entropía.
+"""
+regexes = [
+  '''^MISO4Bits_[\w-]+$''',
+  # Solventa Design System, de donde salen los tokens del tema.
+  '''^F8uIyyRnLbTfZ6zKPP9pCq$''',
+  # Full Prototype Mobile+Web, de donde salen las pantallas.
+  '''^ywaw6DfutH6wzbXs1Y7641$''',
+]
