@@ -1,0 +1,78 @@
+:host {
+  display: block;
+  min-height: 100dvh;
+}
+.login-shell {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+.login-header {
+  background: var(--mat-sys-on-surface);
+  color: var(--mat-sys-on-primary);
+  padding: 14px max(24px, calc((100vw - 1248px) / 2));
+}
+.solventa-logo {
+  font-size: 20px;
+  line-height: 28px;
+}
+.login-page {
+  flex: 1;
+  padding: 92px 24px 80px;
+  text-align: center;
+}
+h1 {
+  font-size: 30px;
+  line-height: 40px;
+  margin: 0 0 60px;
+  font-weight: 700;
+}
+.login-card,
+.error-banner {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 660px;
+  margin-inline: auto;
+}
+.login-card {
+  padding: 36px 32px 32px;
+  border-radius: 16px;
+  background: var(--mat-sys-on-primary);
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  text-align: left;
+}
+.error-banner {
+  text-align: left;
+  padding: 16px 20px;
+  margin-block: 0 44px;
+  border-radius: 12px;
+  background: var(--mat-sys-error-container);
+  color: var(--mat-sys-error);
+}
+.ingresar {
+  align-self: center;
+}
+.login-footer {
+  margin: 0 48px;
+  border-top: 1px solid var(--mat-sys-surface-variant);
+  padding: 24px 0 44px;
+  color: var(--mat-sys-outline);
+  font-size: 12px;
+}
+@media (max-width: 700px) {
+  .login-page {
+    padding: 56px 20px;
+  }
+  h1 {
+    font-size: 26px;
+    margin-bottom: 40px;
+  }
+  .login-card {
+    padding: 32px 24px;
+  }
+  .login-footer {
+    margin-inline: 24px;
+  }
+}

@@ -1,0 +1,68 @@
+<div class="login-shell">
+  <header class="login-header"><span class="solventa-logo">Solventa</span></header>
+  <main id="contenido" class="login-page">
+    <h1>Backoffice de Solventa</h1>
+    @if (error()) {
+      <p class="error-banner" role="alert" id="error-ingreso">{{ error() }}</p>
+    }
+    <form
+      class="login-card"
+      [formGroup]="form"
+      (ngSubmit)="ingresar()"
+      (input)="limpiarError()"
+      novalidate
+      [attr.aria-busy]="esperando()"
+      [attr.aria-describedby]="error() ? 'error-ingreso' : null"
+    >
+      <div class="field" [class.invalid]="credencialesInvalidas()">
+        <label for="correo-login">Correo electrónico</label>
+        <input
+          id="correo-login"
+          type="email"
+          formControlName="email"
+          autocomplete="username"
+          [readOnly]="esperando()"
+          [attr.aria-invalid]="
+            credencialesInvalidas() || (form.controls.email.invalid && form.controls.email.touched)
+          "
+          [attr.aria-describedby]="
+            form.controls.email.invalid && form.controls.email.touched ? 'error-correo' : null
+          "
+        />
+        @if (credencialesInvalidas()) {
+          <img class="field-error" src="/assets/icons/error.svg" alt="" />
+        }
+        @if (form.controls.email.touched && form.controls.email.invalid) {
+          <small id="error-correo">Ingresa un correo electrónico válido.</small>
+        }
+      </div>
+      <div class="field" [class.invalid]="credencialesInvalidas()">
+        <label for="clave-login">Contraseña</label>
+        <input
+          id="clave-login"
+          type="password"
+          formControlName="password"
+          autocomplete="current-password"
+          [readOnly]="esperando()"
+          [attr.aria-invalid]="
+            credencialesInvalidas() ||
+            (form.controls.password.invalid && form.controls.password.touched)
+          "
+          [attr.aria-describedby]="
+            form.controls.password.invalid && form.controls.password.touched ? 'error-clave' : null
+          "
+        />
+        @if (credencialesInvalidas()) {
+          <img class="field-error" src="/assets/icons/error.svg" alt="" />
+        }
+        @if (form.controls.password.touched && form.controls.password.invalid) {
+          <small id="error-clave">Ingresa tu contraseña.</small>
+        }
+      </div>
+      <button class="primary ingresar" type="submit" [disabled]="esperando()">
+        {{ esperando() ? 'Ingresando…' : 'Ingresar' }}
+      </button>
+    </form>
+  </main>
+  <footer class="login-footer">© 2026 Solventa</footer>
+</div>
