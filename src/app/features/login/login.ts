@@ -9,7 +9,7 @@ const MENSAJES: Record<ErrorIngreso, string> = {
   portal: 'Tu acceso es por solventa4bits.com',
   limite: 'Demasiados intentos. Inténtalo más tarde.',
   'no-disponible': 'No pudimos iniciar sesión. Inténtalo nuevamente.',
-  'integracion-pendiente': 'El inicio de sesión aún no está disponible. Inténtalo más tarde.',
+  'sin-rol': 'Tu cuenta no tiene un rol habilitado para el Backoffice. Contacta al administrador.',
 };
 
 /** Basado en src/app/features/login de fe-web: mismos campos y validaciones. */

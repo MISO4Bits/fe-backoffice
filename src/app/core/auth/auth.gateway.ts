@@ -2,16 +2,15 @@ import { InjectionToken } from '@angular/core';
 
 export type Rol = 'ADMIN' | 'SOCIO';
 
-/** Modelo interno del frontend; no representa aún el contrato HTTP de David. */
+/** Modelo interno: el contrato de sesión no devuelve el uid. */
 export interface CuentaInterna {
-  uid: string;
+  uid?: string;
   correo: string;
   nombre: string;
   rol: Rol;
 }
 
-export type ErrorIngreso =
-  'credenciales' | 'portal' | 'limite' | 'no-disponible' | 'integracion-pendiente';
+export type ErrorIngreso = 'credenciales' | 'portal' | 'limite' | 'sin-rol' | 'no-disponible';
 
 export class FalloIngreso extends Error {
   constructor(readonly motivo: ErrorIngreso) {
@@ -19,18 +18,11 @@ export class FalloIngreso extends Error {
   }
 }
 
-/** El adaptador definitivo resolverá tokens, refresco y cierre remoto según el PR. */
+/** Puerto de autenticación del canal interno. */
 export interface AuthGateway {
   ingresar(correo: string, password: string): Promise<CuentaInterna>;
   salir(): Promise<void>;
+  validar?(): Promise<CuentaInterna | null>;
 }
 
-export const AUTH_GATEWAY = new InjectionToken<AuthGateway>('AUTH_GATEWAY', {
-  providedIn: 'root',
-  factory: () => ({
-    ingresar: async () => {
-      throw new FalloIngreso('integracion-pendiente');
-    },
-    salir: async () => {},
-  }),
-});
+export const AUTH_GATEWAY = new InjectionToken<AuthGateway>('AUTH_GATEWAY');

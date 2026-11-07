@@ -21,7 +21,7 @@ export class SessionService {
     this.estado.set(null);
     const cuenta = await this.gateway.ingresar(correo, password);
     if (!cuenta || (cuenta.rol !== 'ADMIN' && cuenta.rol !== 'SOCIO'))
-      throw new FalloIngreso('portal');
+      throw new FalloIngreso('sin-rol');
     if (revision === this.revision) this.estado.set(cuenta);
   }
 
@@ -29,5 +29,15 @@ export class SessionService {
     ++this.revision;
     this.estado.set(null);
     await this.gateway.salir();
+  }
+
+  async validar(): Promise<boolean> {
+    if (!this.estado()) return false;
+    if (!this.gateway.validar) return true;
+    const revision = this.revision;
+    const cuenta = await this.gateway.validar();
+    if (revision !== this.revision) return false;
+    this.estado.set(cuenta);
+    return !!cuenta;
   }
 }
