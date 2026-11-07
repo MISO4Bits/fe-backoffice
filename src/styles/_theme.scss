@@ -1,0 +1,55 @@
+@use '@angular/material' as mat;
+@use 'tokens';
+
+// Tema de Solventa.
+//
+// Angular Material emite las variables de sistema --mat-sys-*. El tema base
+// las genera a partir de una paleta calculada; encima de eso se sobreescriben
+// con los valores exactos del archivo de Figma, de modo que lo que se ve en
+// el navegador y lo que se ve en el prototipo son el mismo color, el mismo
+// tamano y el mismo radio.
+//
+// Los mapas vienen de _tokens.scss, que se genera. No escribir valores aqui.
+
+html {
+  color-scheme: light;
+
+  @include mat.theme(
+    (
+      color: (
+        primary: mat.$azure-palette,
+        tertiary: mat.$blue-palette,
+      ),
+      typography: tokens.$font-plain,
+      density: 0,
+    )
+  );
+
+  // Los valores del Design System mandan sobre la paleta calculada.
+  @include mat.theme-overrides(tokens.$sys-light);
+  @include mat.theme-overrides(tokens.$sys-typescale);
+  @include mat.theme-overrides(tokens.$sys-shape);
+
+  // Radios que Material no reconoce, para los componentes propios.
+  @each $nombre, $valor in tokens.$shape-extra {
+    --solventa-#{$nombre}: #{$valor};
+  }
+
+  // Marca. El Accent Teal y la tipografia del logo no son tokens de sistema:
+  // el teal es del logo y no de la interfaz operativa.
+  @each $nombre, $valor in tokens.$brand {
+    --solventa-#{$nombre}: #{$valor};
+  }
+}
+
+// El producto es claro. El prototipo se diseno en claro y es lo que se valido
+// con usuarios, asi que la preferencia del sistema no cambia el tema por su
+// cuenta: seguirla mostraria una interfaz que nadie reviso.
+//
+// El esquema oscuro queda declarado porque el archivo de Figma lo trae, y se
+// activa solo cuando el documento lo pide de forma explicita.
+html[data-tema='oscuro'] {
+  color-scheme: dark;
+
+  @include mat.theme-overrides(tokens.$sys-dark);
+}

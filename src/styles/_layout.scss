@@ -1,0 +1,58 @@
+@use 'sass:map';
+@use 'tokens';
+
+// Reticula del prototipo web: doce columnas de 82 px con canaleta de 24 y
+// margen de 96 sobre un lienzo de 1440. Debajo de ese ancho las columnas se
+// reparten el espacio disponible y el margen se reduce.
+
+$lienzo: map.get(tokens.$grid, lienzo);
+$columnas: map.get(tokens.$grid, columnas);
+$canaleta: map.get(tokens.$grid, canaleta);
+$margen: map.get(tokens.$grid, margen);
+$base: map.get(tokens.$grid, base);
+
+:root {
+  --solventa-lienzo: #{$lienzo};
+  --solventa-columnas: #{$columnas};
+  --solventa-canaleta: #{$canaleta};
+  --solventa-margen: #{$margen};
+  --solventa-base: #{$base};
+}
+
+/// Espaciado sobre el grid base de 8: espacio(3) son 24 px.
+@function espacio($n) {
+  @return $base * $n;
+}
+
+.solventa-contenedor {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: $lienzo;
+  margin-inline: auto;
+  padding-inline: $margen;
+}
+
+.solventa-reticula {
+  display: grid;
+  grid-template-columns: repeat($columnas, minmax(0, 1fr));
+  gap: $canaleta;
+}
+
+// Por debajo del lienzo de diseno el margen se reduce en dos pasos, para que
+// el contenido no quede pegado al borde en pantallas angostas.
+@media (max-width: 1024px) {
+  .solventa-contenedor {
+    padding-inline: espacio(4);
+  }
+}
+
+@media (max-width: 600px) {
+  .solventa-contenedor {
+    padding-inline: espacio(2);
+  }
+
+  .solventa-reticula {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: espacio(2);
+  }
+}

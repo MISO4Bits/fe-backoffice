@@ -1,0 +1,349 @@
+{
+  "$origen": {
+    "archivo": "Solventa Design System",
+    "fileKey": "F8uIyyRnLbTfZ6zKPP9pCq",
+    "extraido": "2026-09-29",
+    "nota": "Volcado de las variables del archivo de Figma. No se edita a mano: se vuelve a extraer y se regenera con npm run tokens:build."
+  },
+  "esquemas": {
+    "primary": {
+      "light": "#006971",
+      "dark": "#81d3dd"
+    },
+    "on-primary": {
+      "light": "#ffffff",
+      "dark": "#00363b"
+    },
+    "primary-container": {
+      "light": "#9df0fa",
+      "dark": "#004f55"
+    },
+    "on-primary-container": {
+      "light": "#004f55",
+      "dark": "#9df0fa"
+    },
+    "secondary": {
+      "light": "#4a6366",
+      "dark": "#b1cbcf"
+    },
+    "on-secondary": {
+      "light": "#ffffff",
+      "dark": "#1c3437"
+    },
+    "secondary-container": {
+      "light": "#cde7eb",
+      "dark": "#324b4e"
+    },
+    "on-secondary-container": {
+      "light": "#4a4459",
+      "dark": "#e8def8"
+    },
+    "tertiary": {
+      "light": "#505e7d",
+      "dark": "#b8c6ea"
+    },
+    "on-tertiary": {
+      "light": "#ffffff",
+      "dark": "#22304c"
+    },
+    "tertiary-container": {
+      "light": "#d8e2ff",
+      "dark": "#394764"
+    },
+    "on-tertiary-container": {
+      "light": "#394764",
+      "dark": "#d8e2ff"
+    },
+    "error": {
+      "light": "#ba1a1a",
+      "dark": "#ffb4ab"
+    },
+    "on-error": {
+      "light": "#ffffff",
+      "dark": "#690005"
+    },
+    "error-container": {
+      "light": "#ffdad6",
+      "dark": "#93000a"
+    },
+    "on-error-container": {
+      "light": "#93000a",
+      "dark": "#ffdad6"
+    },
+    "background": {
+      "light": "#f5fafb",
+      "dark": "#0e1415"
+    },
+    "on-background": {
+      "light": "#161d1d",
+      "dark": "#dee4e4"
+    },
+    "surface": {
+      "light": "#f5fafb",
+      "dark": "#0e1415"
+    },
+    "on-surface": {
+      "light": "#161d1d",
+      "dark": "#dee4e4"
+    },
+    "surface-variant": {
+      "light": "#dae4e5",
+      "dark": "#3f484a"
+    },
+    "on-surface-variant": {
+      "light": "#3f484a",
+      "dark": "#bec8c9"
+    },
+    "outline": {
+      "light": "#6f797a",
+      "dark": "#899294"
+    },
+    "outline-variant": {
+      "light": "#bec8c9",
+      "dark": "#3f484a"
+    },
+    "surface-tint": {
+      "light": "#006971",
+      "dark": "#81d3dd"
+    },
+    "shadow": {
+      "light": "#000000",
+      "dark": "#000000"
+    },
+    "scrim": {
+      "light": "#000000",
+      "dark": "#000000"
+    },
+    "inverse-surface": {
+      "light": "#2b3132",
+      "dark": "#dee4e4"
+    },
+    "inverse-on-surface": {
+      "light": "#ecf2f2",
+      "dark": "#2b3132"
+    },
+    "inverse-primary": {
+      "light": "#81d3dd",
+      "dark": "#006971"
+    },
+    "primary-fixed": {
+      "light": "#9df0fa",
+      "dark": "#9df0fa"
+    },
+    "on-primary-fixed": {
+      "light": "#002023",
+      "dark": "#002023"
+    },
+    "primary-fixed-dim": {
+      "light": "#81d3dd",
+      "dark": "#81d3dd"
+    },
+    "on-primary-fixed-variant": {
+      "light": "#004f55",
+      "dark": "#004f55"
+    },
+    "secondary-fixed": {
+      "light": "#cde7eb",
+      "dark": "#cde7eb"
+    },
+    "on-secondary-fixed": {
+      "light": "#051f22",
+      "dark": "#051f22"
+    },
+    "secondary-fixed-dim": {
+      "light": "#b1cbcf",
+      "dark": "#b1cbcf"
+    },
+    "on-secondary-fixed-variant": {
+      "light": "#324b4e",
+      "dark": "#324b4e"
+    },
+    "tertiary-fixed": {
+      "light": "#d8e2ff",
+      "dark": "#d8e2ff"
+    },
+    "on-tertiary-fixed": {
+      "light": "#0b1b36",
+      "dark": "#0b1b36"
+    },
+    "tertiary-fixed-dim": {
+      "light": "#b8c6ea",
+      "dark": "#b8c6ea"
+    },
+    "on-tertiary-fixed-variant": {
+      "light": "#394764",
+      "dark": "#394764"
+    },
+    "surface-dim": {
+      "light": "#d5dbdc",
+      "dark": "#0e1415"
+    },
+    "surface-bright": {
+      "light": "#f5fafb",
+      "dark": "#343a3b"
+    },
+    "surface-container-lowest": {
+      "light": "#ffffff",
+      "dark": "#090f10"
+    },
+    "surface-container-low": {
+      "light": "#eff5f5",
+      "dark": "#161d1d"
+    },
+    "surface-container": {
+      "light": "#e9efef",
+      "dark": "#1a2121"
+    },
+    "surface-container-high": {
+      "light": "#e3e9ea",
+      "dark": "#252b2c"
+    },
+    "surface-container-highest": {
+      "light": "#dee4e4",
+      "dark": "#303637"
+    }
+  },
+  "fuentes": {
+    "brand": "Plus Jakarta Sans",
+    "plain": "Plus Jakarta Sans",
+    "pesos": {
+      "regular": 400,
+      "medium": 500,
+      "bold": 600
+    }
+  },
+  "typescale": {
+    "display-large": {
+      "size": 57,
+      "line-height": 64,
+      "tracking": -0.25,
+      "weight": "regular",
+      "font": "brand"
+    },
+    "display-medium": {
+      "size": 45,
+      "line-height": 52,
+      "tracking": 0,
+      "weight": "regular",
+      "font": "brand"
+    },
+    "display-small": {
+      "size": 36,
+      "line-height": 44,
+      "tracking": 0,
+      "weight": "regular",
+      "font": "brand"
+    },
+    "headline-large": {
+      "size": 32,
+      "line-height": 40,
+      "tracking": 0,
+      "weight": "regular",
+      "font": "brand"
+    },
+    "headline-medium": {
+      "size": 28,
+      "line-height": 36,
+      "tracking": 0,
+      "weight": "regular",
+      "font": "brand"
+    },
+    "headline-small": {
+      "size": 24,
+      "line-height": 32,
+      "tracking": 0,
+      "weight": "regular",
+      "font": "brand"
+    },
+    "title-large": {
+      "size": 22,
+      "line-height": 28,
+      "tracking": 0,
+      "weight": "regular",
+      "font": "brand"
+    },
+    "title-medium": {
+      "size": 16,
+      "line-height": 24,
+      "tracking": 0.15,
+      "weight": "medium",
+      "font": "plain"
+    },
+    "title-small": {
+      "size": 14,
+      "line-height": 20,
+      "tracking": 0.1,
+      "weight": "medium",
+      "font": "plain"
+    },
+    "body-large": {
+      "size": 16,
+      "line-height": 24,
+      "tracking": 0.5,
+      "weight": "regular",
+      "font": "plain"
+    },
+    "body-medium": {
+      "size": 14,
+      "line-height": 20,
+      "tracking": 0.25,
+      "weight": "regular",
+      "font": "plain"
+    },
+    "body-small": {
+      "size": 12,
+      "line-height": 16,
+      "tracking": 0.4,
+      "weight": "regular",
+      "font": "plain"
+    },
+    "label-large": {
+      "size": 14,
+      "line-height": 20,
+      "tracking": 0.1,
+      "weight": "medium",
+      "font": "plain"
+    },
+    "label-medium": {
+      "size": 12,
+      "line-height": 16,
+      "tracking": 0.5,
+      "weight": "medium",
+      "font": "plain"
+    },
+    "label-small": {
+      "size": 11,
+      "line-height": 16,
+      "tracking": 0.5,
+      "weight": "medium",
+      "font": "plain"
+    }
+  },
+  "forma": {
+    "corner-none": 0,
+    "corner-extra-small": 4,
+    "corner-small": 8,
+    "corner-medium": 12,
+    "corner-large": 16,
+    "corner-large-increased": 20,
+    "corner-extra-large": 28,
+    "corner-extra-large-increased": 32,
+    "corner-extra-extra-large": 48,
+    "corner-full": 1000
+  },
+  "marca": {
+    "accent-teal": "#00c8d7",
+    "brand-black": "#000000",
+    "brand-white": "#ffffff",
+    "logo-font": "Dancing Script",
+    "logo-weight": 700
+  },
+  "reticula": {
+    "lienzo": 1440,
+    "columnas": 12,
+    "canaleta": 24,
+    "ancho-columna": 82,
+    "margen": 96,
+    "base": 8
+  }
+}
