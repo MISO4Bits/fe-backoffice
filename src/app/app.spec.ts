@@ -2,6 +2,8 @@ import { TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
 import { vi } from 'vitest';
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { routes } from './app.routes';
 import { AUTH_GATEWAY, CuentaInterna, FalloIngreso, Rol } from './core/auth/auth.gateway';
 import { SessionService } from './core/auth/session.service';
@@ -24,7 +26,12 @@ describe('Ingreso y navegación de BITS-363', () => {
     ingresar = vi.fn().mockResolvedValue(cuenta('ADMIN'));
     salir = vi.fn().mockResolvedValue(undefined);
     TestBed.configureTestingModule({
-      providers: [provideRouter(routes), { provide: AUTH_GATEWAY, useValue: { ingresar, salir } }],
+      providers: [
+        provideRouter(routes),
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        { provide: AUTH_GATEWAY, useValue: { ingresar, salir } },
+      ],
     });
     sesion = TestBed.inject(SessionService);
     router = TestBed.inject(Router);
