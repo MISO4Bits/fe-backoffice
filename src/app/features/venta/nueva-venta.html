@@ -1,0 +1,403 @@
+@switch (paso()) {
+  @case ('buscar') {
+    <h1>Nueva venta</h1>
+    <p class="page-intro">Busca al cliente por su documento o su correo.</p>
+    @if (error()) {
+      <p class="error-banner" role="alert">{{ error() }}</p>
+    }
+    <form
+      class="sale-card"
+      [formGroup]="busqueda"
+      (ngSubmit)="buscar()"
+      (input)="editarBusqueda()"
+      (change)="editarBusqueda()"
+      novalidate
+      aria-label="Buscar cliente"
+      [attr.aria-busy]="ocupada()"
+    >
+      <h2>DOCUMENTO O CORREO DEL CLIENTE</h2>
+      <fieldset class="search-grid" [disabled]="ocupada()">
+        <legend class="sr-only">Busca por documento, correo o ambos</legend>
+        <div class="field">
+          <label for="buscar-tipo">Tipo de documento</label>
+          <select id="buscar-tipo" formControlName="tipoDocumento">
+            @for (tipo of tipos; track tipo.valor) {
+              <option [value]="tipo.valor">{{ tipo.nombre }}</option>
+            }
+          </select>
+        </div>
+        <div class="field" [class.invalid]="camposError()['numeroDocumento']">
+          <label for="buscar-documento">Número de documento</label>
+          <input
+            id="buscar-documento"
+            formControlName="numeroDocumento"
+            autocomplete="off"
+            [attr.aria-invalid]="
+              !!camposError()['numeroDocumento'] ||
+              (busqueda.controls.numeroDocumento.touched &&
+                busqueda.controls.numeroDocumento.invalid)
+            "
+            aria-describedby="error-buscar-documento"
+          />
+          <small id="error-buscar-documento">{{
+            camposError()['numeroDocumento'] ||
+              (busqueda.controls.numeroDocumento.touched &&
+              busqueda.controls.numeroDocumento.invalid
+                ? 'Ingresa un documento válido de 4 a 20 caracteres.'
+                : '')
+          }}</small>
+        </div>
+        <span class="or">o</span>
+        <div class="field" [class.invalid]="camposError()['correo']">
+          <label for="buscar-correo">Correo electrónico</label>
+          <input
+            id="buscar-correo"
+            type="email"
+            formControlName="correo"
+            autocomplete="off"
+            [attr.aria-invalid]="
+              !!camposError()['correo'] ||
+              (busqueda.controls.correo.touched && busqueda.controls.correo.invalid)
+            "
+            aria-describedby="error-buscar-correo"
+          />
+          @if (camposError()['correo']) {
+            <img class="field-error" src="/assets/icons/error.svg" alt="" />
+          }
+          <small id="error-buscar-correo">{{
+            camposError()['correo'] ||
+              (busqueda.controls.correo.touched && busqueda.controls.correo.invalid
+                ? 'Ingresa un correo electrónico válido.'
+                : '')
+          }}</small>
+        </div>
+        <button
+          class="primary"
+          type="submit"
+          [disabled]="ocupada() || !hayCriterio() || inconsistente()"
+        >
+          {{ ocupada() ? 'Buscando…' : 'Continuar' }}
+        </button>
+      </fieldset>
+      <p class="hint">Basta con uno de los dos.</p>
+    </form>
+  }
+  @case ('cliente') {
+    <h1>Datos del cliente</h1>
+    <p class="page-intro">No encontramos una cuenta con ese documento o ese correo.</p>
+    <form
+      [formGroup]="alta"
+      (ngSubmit)="crearCliente()"
+      novalidate
+      aria-label="Datos del cliente"
+      [attr.aria-busy]="ocupada()"
+    >
+      <fieldset class="sale-card client-grid" [disabled]="ocupada()">
+        <legend class="sr-only">Datos del cliente nuevo</legend>
+        <h2>DATOS DEL CLIENTE</h2>
+        @for (campo of camposCliente; track campo.nombre) {
+          <div class="field {{ campo.nombre }}" [class.invalid]="errorAlta(campo.nombre)">
+            <label [for]="'cliente-' + campo.nombre">{{ campo.etiqueta }}</label>
+            @if (campo.tipo === 'select') {
+              <select
+                [id]="'cliente-' + campo.nombre"
+                [formControlName]="campo.nombre"
+                (change)="editarCliente('numeroDocumento')"
+              >
+                @for (tipo of tipos; track tipo.valor) {
+                  <option [value]="tipo.valor">{{ tipo.nombre }}</option>
+                }
+              </select>
+            } @else {
+              <input
+                [id]="'cliente-' + campo.nombre"
+                [type]="campo.tipo"
+                [formControlName]="campo.nombre"
+                (input)="editarCliente(campo.nombre)"
+                [attr.aria-invalid]="!!errorAlta(campo.nombre)"
+                [attr.aria-describedby]="'error-cliente-' + campo.nombre"
+                autocomplete="off"
+              />
+            }
+            @if (camposError()[campo.nombre]) {
+              <img class="field-error" src="/assets/icons/error.svg" alt="" />
+            }
+            <small [id]="'error-cliente-' + campo.nombre">{{ errorAlta(campo.nombre) }}</small>
+          </div>
+        }
+        <p class="hint">Al cliente le llegan por correo la bienvenida y su contraseña.</p>
+      </fieldset>
+      @if (error()) {
+        <p class="error-banner" role="alert">{{ error() }}</p>
+      }
+      <div class="actions">
+        <button class="secondary" type="button" (click)="volver()" [disabled]="ocupada()">
+          Volver
+        </button>
+        <button class="primary" type="submit" [disabled]="ocupada() || tieneConflicto()">
+          {{ ocupada() ? 'Creando cliente…' : 'Continuar' }}
+        </button>
+      </div>
+    </form>
+  }
+  @case ('venta') {
+    <h1>Datos de la venta</h1>
+    @if (error()) {
+      <p class="error-banner" role="alert">{{ error() }}</p>
+    }
+    <form
+      [formGroup]="venta"
+      (ngSubmit)="crearPoliza()"
+      novalidate
+      aria-label="Datos de la venta"
+      [attr.aria-busy]="ocupada()"
+    >
+      <fieldset class="sale-grid" [disabled]="ocupada() || reintentoVenta()">
+        <legend class="sr-only">Crédito, inmueble y coberturas</legend>
+        <div class="sale-data">
+          <section class="sale-card customer" aria-label="Cliente seleccionado">
+            <h2>CLIENTE</h2>
+            <h3>{{ cliente()?.nombre }}</h3>
+            <p class="hint">
+              {{
+                cliente()?.tipoDocumento === 'PA'
+                  ? 'Pasaporte'
+                  : cliente()?.tipoDocumento === 'CE'
+                    ? 'C.E.'
+                    : 'C.C.'
+              }}
+              ****{{ cliente()?.ultimosDigitosDocumento }}
+            </p>
+          </section>
+          <section class="sale-card" aria-labelledby="titulo-credito">
+            <h2 id="titulo-credito">CRÉDITO</h2>
+            @if (errorBancos()) {
+              <p class="bank-error" role="alert">
+                {{ errorBancos() }}
+                <button
+                  class="text-action"
+                  type="button"
+                  (click)="cargarBancos()"
+                  [disabled]="cargandoBancos()"
+                >
+                  Reintentar carga
+                </button>
+              </p>
+            }
+            <div class="credit-grid">
+              <div class="field">
+                <label for="venta-banco">Banco</label>
+                <select
+                  id="venta-banco"
+                  formControlName="entidadAcreedora"
+                  [attr.aria-invalid]="!!errorVenta('entidadAcreedora')"
+                  aria-describedby="error-banco"
+                >
+                  <option value="">
+                    {{ cargandoBancos() ? 'Cargando bancos…' : 'Selecciona un banco' }}
+                  </option>
+                  @for (banco of bancos(); track banco.id) {
+                    <option [value]="banco.nombre">{{ banco.nombre }}</option>
+                  }
+                </select>
+                <small id="error-banco">{{ errorVenta('entidadAcreedora') }}</small>
+              </div>
+              <div class="field">
+                <label for="venta-monto">Monto del crédito</label>
+                <input
+                  id="venta-monto"
+                  formControlName="valorCredito"
+                  inputmode="decimal"
+                  (blur)="formatearMonto('valorCredito')"
+                  (input)="editarCliente('valorCredito')"
+                  [attr.aria-invalid]="!!errorVenta('valorCredito')"
+                  aria-describedby="error-monto"
+                />
+                <small id="error-monto">{{ errorVenta('valorCredito') }}</small>
+              </div>
+              <div class="field">
+                <label for="venta-plazo">Plazo en meses</label>
+                <input
+                  id="venta-plazo"
+                  type="number"
+                  formControlName="plazoRestanteMeses"
+                  min="1"
+                  max="480"
+                  step="1"
+                  (input)="editarCliente('plazoRestanteMeses')"
+                  [attr.aria-invalid]="!!errorVenta('plazoRestanteMeses')"
+                  aria-describedby="error-plazo"
+                />
+                <small id="error-plazo">{{ errorVenta('plazoRestanteMeses') }}</small>
+              </div>
+              <div class="field">
+                <label for="venta-cuota">Cuota mensual del crédito</label>
+                <input
+                  id="venta-cuota"
+                  formControlName="cuotaMensual"
+                  inputmode="decimal"
+                  (blur)="formatearMonto('cuotaMensual')"
+                  (input)="editarCliente('cuotaMensual')"
+                  [attr.aria-invalid]="!!errorVenta('cuotaMensual')"
+                  aria-describedby="error-cuota"
+                />
+                <small id="error-cuota">{{ errorVenta('cuotaMensual') }}</small>
+              </div>
+            </div>
+          </section>
+          <section class="sale-card" aria-labelledby="titulo-inmueble">
+            <h2 id="titulo-inmueble">INMUEBLE</h2>
+            <div class="address-grid">
+              <div class="field">
+                <label for="venta-direccion">Dirección</label>
+                <input
+                  id="venta-direccion"
+                  formControlName="direccion"
+                  autocomplete="off"
+                  (input)="editarCliente('direccion')"
+                  [attr.aria-invalid]="!!errorVenta('direccion')"
+                  aria-describedby="error-direccion"
+                />
+                <small id="error-direccion">{{ errorVenta('direccion') }}</small>
+              </div>
+              <div class="field">
+                <label for="venta-municipio">Ciudad o municipio</label>
+                <input
+                  id="venta-municipio"
+                  formControlName="municipio"
+                  autocomplete="off"
+                  (input)="editarCliente('municipio')"
+                  [attr.aria-invalid]="!!errorVenta('municipio')"
+                  aria-describedby="error-municipio"
+                />
+                <small id="error-municipio">{{ errorVenta('municipio') }}</small>
+              </div>
+            </div>
+          </section>
+        </div>
+        <div class="coverages">
+          @if (cotizando()) {
+            <p class="price-status" role="status">Calculando prima…</p>
+          }
+          @if (vida(); as cobertura) {
+            <section class="sale-card life" aria-labelledby="titulo-vida">
+              <span class="tag">Obligatoria</span>
+              <h3 id="titulo-vida">Vida</h3>
+              <p>
+                Salda con el banco lo que quede del crédito si el cliente queda incapacitado o
+                fallece.
+              </p>
+              <div class="insured">
+                <span>Suma asegurada</span><strong>{{ moneda(cobertura.sumaAsegurada) }}</strong>
+              </div>
+            </section>
+            @if (hogar(); as coberturaHogar) {
+              <section
+                class="sale-card home"
+                [class.selected]="hogarSeleccionado()"
+                aria-label="Cobertura opcional Tu casa"
+              >
+                <div class="home-title">
+                  <input id="venta-hogar" type="checkbox" formControlName="hogar" /><label
+                    for="venta-hogar"
+                    >Tu casa</label
+                  ><span class="tag">Opcional</span
+                  ><strong>+ {{ moneda(coberturaHogar.primaTotal) }}/mes</strong>
+                </div>
+                <p>Incendio y terremoto de la estructura.</p>
+                <p>Cubrimos hasta {{ moneda(coberturaHogar.sumaAsegurada) }}</p>
+              </section>
+            }
+            <section class="sale-card summary" aria-label="Prima mensual" aria-live="polite">
+              @for (c of seleccionadas(); track c.codigo) {
+                <div>
+                  <span>{{ c.codigo === 'VIDA' ? 'Vida' : 'Tu casa' }}</span
+                  ><strong>{{ moneda(c.primaNeta) }}/mes</strong>
+                </div>
+              }
+              <div>
+                <span>IVA</span><strong>{{ moneda(iva()) }}/mes</strong>
+              </div>
+              <div class="total">
+                <strong>Prima mensual</strong><strong>{{ moneda(prima()) }}</strong>
+              </div>
+              <p class="hint">Se cobra en la cuota del crédito.</p>
+            </section>
+          } @else if (!cotizando()) {
+            <section class="sale-card price-status">
+              <p>Completa banco, monto y plazo para ver la prima.</p>
+              <button class="text-action" type="button" (click)="calcularPrecio()">
+                Calcular prima
+              </button>
+            </section>
+          }
+        </div>
+      </fieldset>
+      <div class="actions sale-actions">
+        <button
+          class="secondary"
+          type="button"
+          (click)="volver()"
+          [disabled]="ocupada() || reintentoVenta()"
+        >
+          Volver
+        </button>
+        <button
+          class="primary"
+          type="submit"
+          [disabled]="
+            ocupada() || (!reintentoVenta() && (venta.invalid || !precio() || cotizando()))
+          "
+        >
+          {{
+            ocupada()
+              ? 'Creando póliza…'
+              : reintentoVenta()
+                ? 'Reintentar creación'
+                : 'Crear póliza'
+          }}
+        </button>
+      </div>
+    </form>
+  }
+  @case ('creada') {
+    <h1>Póliza creada</h1>
+    @if (emitida(); as poliza) {
+      <section class="sale-card confirmation" aria-label="Datos de la póliza">
+        <div class="confirmation-title">
+          <h3>Datos de la póliza</h3>
+          <span class="tag">Vigente</span>
+        </div>
+        <dl>
+          <div>
+            <dt>Número de póliza</dt>
+            <dd>{{ poliza.numero }}</dd>
+          </div>
+          <div>
+            <dt>Cliente</dt>
+            <dd>
+              {{ cliente()?.nombre }}, {{ cliente()?.tipoDocumento }} ****{{
+                cliente()?.ultimosDigitosDocumento
+              }}
+            </dd>
+          </div>
+          <div>
+            <dt>Banco</dt>
+            <dd>{{ poliza.datosCredito.entidadAcreedora }}</dd>
+          </div>
+          <div>
+            <dt>Prima mensual</dt>
+            <dd>{{ moneda(poliza.primaTotalMensual) }}</dd>
+          </div>
+          @if (poliza.vigencia; as vigencia) {
+            <div>
+              <dt>Vigencia</dt>
+              <dd>{{ fecha(vigencia.desde) }} a {{ fecha(vigencia.hasta) }}</dd>
+            </div>
+          }
+        </dl>
+      </section>
+      <button class="primary new-sale" type="button" (click)="nuevaVenta()">Nueva venta</button>
+    }
+  }
+}

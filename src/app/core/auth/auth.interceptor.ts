@@ -26,7 +26,9 @@ export const authInterceptor: HttpInterceptorFn = (request, next) => {
       auth.esTokenActual(token)
     ) {
       if (error.status === 401) void rechazar();
-      if (error.status === 403) void router.navigateByUrl(sesion.inicio());
+      if (error.status === 403 && error.error?.codigo === 'ROL_NO_PERMITIDO') {
+        void router.navigateByUrl(sesion.inicio());
+      }
     }
     return throwError(() => error);
   };

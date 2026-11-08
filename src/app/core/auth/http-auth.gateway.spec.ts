@@ -206,4 +206,17 @@ describe('Contrato HTTP de sesión interna e interceptor', () => {
     expect(sesion.cuenta()?.rol).toBe('SOCIO');
     expect(navegar).not.toHaveBeenCalled();
   });
+
+  it('CLIENTE_NO_ACTIVO no redirige ni cierra la sesión del Socio', async () => {
+    await ingresar(respuesta({ rol: 'SOCIO' }));
+    const pending = firstValueFrom(http.post('/web/v1/socio/ventas/precio', {}));
+    const assertion = expect(pending).rejects.toMatchObject({ status: 403 });
+    (await esperarRequest('/web/v1/socio/ventas/precio')).flush(
+      { codigo: 'CLIENTE_NO_ACTIVO' },
+      { status: 403, statusText: 'Forbidden' },
+    );
+    await assertion;
+    expect(sesion.cuenta()?.rol).toBe('SOCIO');
+    expect(navegar).not.toHaveBeenCalled();
+  });
 });
