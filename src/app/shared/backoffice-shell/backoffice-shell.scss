@@ -1,0 +1,88 @@
+:host {
+  display: block;
+  min-height: 100dvh;
+}
+.backoffice-header {
+  background: var(--mat-sys-on-surface);
+  color: var(--mat-sys-on-primary);
+  padding-inline: max(24px, calc((100vw - 1248px) / 2));
+}
+.header-row {
+  min-height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+.solventa-logo {
+  color: inherit;
+  font-size: 24px;
+  text-decoration: none;
+}
+.account {
+  display: flex;
+  align-items: center;
+  gap: 40px;
+  color: var(--mat-sys-outline-variant);
+}
+.environment {
+  font-size: 12px;
+}
+.logout {
+  background: transparent;
+  color: var(--mat-sys-on-primary);
+  border: 0;
+  padding: 12px 24px;
+  margin-left: 80px;
+  font: inherit;
+  cursor: pointer;
+}
+.logout:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+nav {
+  display: flex;
+}
+nav a {
+  padding: 8px 32px;
+  color: var(--mat-sys-outline);
+  text-decoration: none;
+  border-bottom: 4px solid transparent;
+}
+nav a:hover,
+nav a.active {
+  color: var(--mat-sys-on-primary);
+}
+nav a.active {
+  border-bottom-color: var(--mat-sys-secondary-container);
+}
+.backoffice-content {
+  max-width: 1248px;
+  margin: 0 auto;
+  padding: 40px 24px 80px;
+}
+@media (max-width: 700px) {
+  .header-row {
+    flex-wrap: wrap;
+    padding-block: 16px;
+    gap: 12px;
+  }
+  .account {
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .environment {
+    display: none;
+  }
+  .logout {
+    margin-left: 0;
+    padding: 8px;
+  }
+  nav a {
+    padding-inline: 16px;
+  }
+  .backoffice-content {
+    padding-top: 32px;
+  }
+}

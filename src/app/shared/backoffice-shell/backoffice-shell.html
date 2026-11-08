@@ -1,0 +1,29 @@
+<a class="skip-link" href="#contenido">Ir al contenido</a>
+<header class="backoffice-header">
+  <div class="header-row">
+    <a class="solventa-logo" [routerLink]="sesion.inicio()" aria-label="Solventa, inicio"
+      >Solventa</a
+    >
+    <div class="account">
+      <span class="environment">Producción</span
+      ><span>Solventa · {{ sesion.cuenta()?.rol === 'ADMIN' ? 'Admin' : 'Socio' }}</span
+      ><button class="logout" type="button" (click)="salir()" [disabled]="saliendo()">
+        {{ saliendo() ? 'Saliendo…' : 'Salir' }}
+      </button>
+    </div>
+  </div>
+  <nav aria-label="Menú principal">
+    @if (sesion.cuenta()?.rol === 'ADMIN') {
+      <a routerLink="/tablero" routerLinkActive="active" ariaCurrentWhenActive="page">Tablero</a>
+      <a routerLink="/solicitudes" routerLinkActive="active" ariaCurrentWhenActive="page"
+        >Solicitudes</a
+      >
+      <a routerLink="/siniestros" routerLinkActive="active" ariaCurrentWhenActive="page"
+        >Siniestros</a
+      >
+    } @else {
+      <a routerLink="/venta" routerLinkActive="active" ariaCurrentWhenActive="page">Venta</a>
+    }
+  </nav>
+</header>
+<main id="contenido" class="backoffice-content" tabindex="-1"><router-outlet /></main>

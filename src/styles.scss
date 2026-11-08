@@ -20,6 +20,108 @@ body {
   font-weight: var(--solventa-logo-weight);
 }
 
+button,
+input,
+select {
+  font: inherit;
+}
+h1 {
+  font-size: 30px;
+  line-height: 40px;
+  margin: 0;
+  font-weight: 700;
+}
+.page-intro {
+  color: var(--mat-sys-on-surface-variant);
+  margin: 4px 0 0;
+  font-size: 16px;
+  line-height: 24px;
+}
+.primary {
+  min-height: 56px;
+  border: 0;
+  border-radius: 100px;
+  background: var(--mat-sys-primary);
+  color: var(--mat-sys-on-primary);
+  padding: 16px 24px;
+  cursor: pointer;
+}
+.primary:hover:not(:disabled) {
+  background: var(--mat-sys-on-primary-container);
+}
+.primary:disabled {
+  cursor: not-allowed;
+}
+.field {
+  position: relative;
+  min-width: 0;
+}
+.field label {
+  position: absolute;
+  top: -9px;
+  left: 12px;
+  padding: 0 4px;
+  background: var(--mat-sys-on-primary);
+  color: var(--mat-sys-on-surface-variant);
+  font-size: 12px;
+  line-height: 18px;
+  z-index: 1;
+}
+.field input,
+.field select {
+  box-sizing: border-box;
+  width: 100%;
+  height: 56px;
+  padding: 0 16px;
+  border: 1px solid var(--mat-sys-outline);
+  border-radius: 4px;
+  background: var(--mat-sys-on-primary);
+  color: var(--mat-sys-on-surface-variant);
+  font-size: 16px;
+  opacity: 1;
+}
+.field input::placeholder {
+  color: var(--mat-sys-on-surface-variant);
+  opacity: 1;
+}
+.field input:focus,
+.field select:focus {
+  outline: 2px solid var(--mat-sys-primary);
+  outline-offset: 0;
+}
+.field input[aria-invalid='true'] {
+  border-color: var(--mat-sys-error);
+  padding-right: 40px;
+}
+.field.invalid label,
+.field small {
+  color: var(--mat-sys-error);
+}
+.field small {
+  display: block;
+  margin-top: 4px;
+  font-size: 12px;
+}
+.field-error {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  right: 12px;
+  top: 18px;
+}
+.skip-link {
+  position: fixed;
+  top: -80px;
+  left: 16px;
+  z-index: 10;
+  padding: 12px;
+  background: var(--mat-sys-on-primary);
+  color: var(--mat-sys-primary);
+}
+.skip-link:focus {
+  top: 8px;
+}
+
 :focus-visible {
   outline: 2px solid var(--mat-sys-primary);
   outline-offset: 2px;
