@@ -112,10 +112,11 @@ jobs:
       - name: Instalar dependencias
         run: npm ci
 
-      # Todavía sin configuración de la URL de la API por ambiente: se agrega con una
-      # configuración `dev` (reemplazo de archivo), como en fe-web, cuando el backoffice llame al BFF.
-      - name: Build de producción
-        run: npm run build -- --configuration=production
+      # `build:dev` es producción más la configuración `dev`, que reemplaza la base de la API
+      # (`/web`, solo válida con el proxy local) por la del BFF de dev. Sin ella el navegador llama a
+      # backoffice.solventa4bits.com/web, que es el bucket estático, y responde un 400 en XML.
+      - name: Build para dev
+        run: npm run build:dev
 
       - id: auth
         name: Autenticar contra GCP (Workload Identity Federation)
