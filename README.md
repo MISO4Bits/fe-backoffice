@@ -118,3 +118,21 @@ Pendiente de verificación en el entorno integrado: tarifa real, correos/documen
 de póliza y conservación de cotizaciones, solicitudes y evidencias en svc-core
 (AC-6). El frontend no consulta ni modifica esos recursos. No se afirma que las
 pruebas con adaptadores en memoria validen la persistencia o notificaciones reales.
+
+## BITS-364 — Solicitudes en revisión
+
+El Admin dispone de la bandeja `/solicitudes` y el detalle `/solicitudes/:id`:
+datos del cliente y crédito, primas, historial de decisiones y evidencias
+autenticadas. Puede aprobar los pendientes que verificó o rechazar con un solo
+motivo, sin nota. El BFF registra el autor desde la sesión.
+
+La bandeja recorre todos los cursores, completa nombre y documento consultando
+los detalles con concurrencia limitada y pagina los resultados en memoria.
+Al decidir vuelve a cargar la bandeja y excluye las solicitudes cuyo historial
+ya contiene una decisión del Admin actual. Los conflictos, vencimientos y respuestas
+inciertas se informan sin repetir automáticamente la operación.
+
+Para probar se necesita una cuenta ADMIN y el BFF con BITS-376 disponible. La
+configuración de proxy y arranque local es la misma descrita anteriormente.
+El alcance, la evidencia y las verificaciones pendientes de integración están
+en [docs/bits364-validation.md](docs/bits364-validation.md).

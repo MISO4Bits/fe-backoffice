@@ -1,0 +1,236 @@
+:host {
+  display: block;
+}
+.volver {
+  display: inline-block;
+  margin-bottom: 16px;
+}
+.panel {
+  border: 1px solid var(--mat-sys-outline-variant);
+  border-radius: 12px;
+  padding: 20px;
+  background: var(--mat-sys-on-primary);
+}
+.cabecera {
+  position: relative;
+  margin-bottom: 24px;
+  padding-right: 170px;
+}
+.cabecera h1 {
+  font-size: 26px;
+  line-height: 36px;
+}
+.cabecera p,
+.nota {
+  color: var(--mat-sys-on-surface-variant);
+  font-size: 12px;
+  line-height: 20px;
+  margin: 4px 0 0;
+}
+.cabecera .tag {
+  position: absolute;
+  right: 32px;
+  top: 24px;
+}
+.columnas {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+.columna {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  min-width: 0;
+}
+h2,
+h3 {
+  font-size: 16px;
+  line-height: 24px;
+  margin: 0 0 8px;
+  font-weight: 600;
+}
+.etiqueta {
+  display: block;
+  font-size: 11px;
+  line-height: 18px;
+  color: var(--mat-sys-on-surface-variant);
+  margin: 0 0 8px;
+}
+.cabecera .etiqueta {
+  color: var(--mat-sys-primary);
+}
+.evidencias {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+.foto {
+  border: 1px dashed var(--mat-sys-primary);
+  border-radius: 12px;
+  padding: 16px;
+  text-align: center;
+  min-width: 0;
+}
+.foto h3 {
+  font-size: 16px;
+  margin: 0;
+}
+.foto p {
+  margin: 4px 0;
+  font-size: 13px;
+}
+.foto img {
+  display: block;
+  width: 100%;
+  height: 110px;
+  object-fit: contain;
+  margin-block: 8px;
+}
+.selfie {
+  grid-column: 1/-1;
+}
+.selfie img {
+  height: 150px;
+}
+.estado {
+  color: var(--mat-sys-primary);
+}
+.revision {
+  background: transparent;
+}
+.pendiente {
+  display: flex;
+  align-items: start;
+  gap: 12px;
+  margin-top: 20px;
+  font-size: 14px;
+  cursor: pointer;
+}
+input[type='checkbox'] {
+  accent-color: var(--mat-sys-primary);
+  width: 16px;
+  height: 16px;
+  margin: 2px 0 0;
+  flex-shrink: 0;
+}
+.pendiente small {
+  display: block;
+  color: var(--mat-sys-on-surface-variant);
+  font-size: 12px;
+}
+.decision {
+  border-top: 1px solid var(--mat-sys-outline-variant);
+  padding-top: 12px;
+  margin-top: 12px;
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+.decision p {
+  margin: 4px 0;
+}
+.decision ul {
+  padding-left: 20px;
+}
+dl {
+  margin: 0;
+  font-size: 14px;
+}
+dl div {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 6px;
+}
+dt {
+  color: var(--mat-sys-on-surface-variant);
+}
+dd {
+  margin: 0;
+  text-align: right;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+.total {
+  padding-top: 16px;
+  margin-top: 20px !important;
+  border-top: 1px solid var(--mat-sys-outline-variant);
+  align-items: center;
+}
+.total dt {
+  color: inherit;
+  font-weight: 600;
+}
+.total dd {
+  color: var(--mat-sys-primary);
+  font-size: 24px;
+}
+.decidir {
+  background: var(--mat-sys-surface-container-low);
+  border: 0;
+}
+.decidir p {
+  font-size: 12px;
+  margin: 0 0 16px;
+}
+.acciones {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.acciones button {
+  min-height: 44px;
+  padding: 10px 32px;
+}
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+.error {
+  background: var(--mat-sys-error-container);
+  color: var(--mat-sys-on-error-container);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+.visor {
+  border: 0;
+  border-radius: 16px;
+  padding: 24px;
+  width: min(900px, calc(100vw - 80px));
+  background: var(--mat-sys-on-primary);
+  color: inherit;
+}
+.visor::backdrop {
+  background: rgb(21 32 32 / 65%);
+}
+.visor-cabecera {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+.visor img {
+  width: 100%;
+  height: 65vh;
+  object-fit: contain;
+}
+@media (max-width: 700px) {
+  .columnas {
+    grid-template-columns: 1fr;
+  }
+  .cabecera {
+    padding-right: 20px;
+  }
+  .cabecera .tag {
+    position: static;
+    margin-top: 8px;
+  }
+  .evidencias {
+    grid-template-columns: 1fr;
+  }
+  .acciones {
+    flex-wrap: wrap;
+  }
+}

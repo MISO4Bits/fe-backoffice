@@ -27,8 +27,15 @@ export const routes: Routes = [
         path: 'solicitudes',
         title: 'Solicitudes · Solventa',
         canActivate: [requiereRol('ADMIN')],
-        data: { titulo: 'Solicitudes' },
-        loadComponent: () => import('./features/pendiente/pendiente').then((m) => m.Pendiente),
+        loadComponent: () =>
+          import('./features/solicitudes/bandeja-solicitudes').then((m) => m.BandejaSolicitudes),
+      },
+      {
+        path: 'solicitudes/:id',
+        title: 'Detalle de la solicitud · Solventa',
+        canActivate: [requiereRol('ADMIN')],
+        loadComponent: () =>
+          import('./features/solicitudes/detalle-solicitud').then((m) => m.DetalleSolicitud),
       },
       {
         path: 'siniestros',
