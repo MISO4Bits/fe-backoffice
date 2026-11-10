@@ -164,7 +164,7 @@ describe('Ingreso y navegación de BITS-363', () => {
     await harness.navigateByUrl('/venta');
     expect(router.url).toBe('/tablero');
     await harness.navigateByUrl('/solicitudes');
-    expect(pantalla().querySelector('h1')?.textContent).toBe('Solicitudes');
+    expect(pantalla().querySelector('h1')?.textContent).toBe('Solicitudes en revisión');
     await harness.navigateByUrl('/siniestros');
     expect(pantalla().querySelector('h1')?.textContent).toBe('Siniestros');
   });

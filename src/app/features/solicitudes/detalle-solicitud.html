@@ -1,0 +1,206 @@
+<a class="text-action volver" routerLink="/solicitudes">Volver a la bandeja</a>
+@if (cargando()) {
+  <p role="status">Consultando la solicitud…</p>
+}
+@if (error()) {
+  <div class="error" role="alert">
+    <p>{{ error() }}</p>
+    <button class="secondary" [disabled]="enviando()" (click)="cargar()">Volver a consultar</button>
+  </div>
+}
+@if (solicitud(); as s) {
+  <div [attr.inert]="enviando() || cargando() || error() ? '' : null">
+    <header class="panel cabecera">
+      <span class="etiqueta">SOLICITUD</span>
+      <h1>{{ s.cliente.nombre }}</h1>
+      <p>
+        {{ s.cliente.tipoDocumento === 'CC' ? 'C.C.' : s.cliente.tipoDocumento }}
+        {{ s.cliente.numeroDocumento }}. Enviada el {{ fechaHora(s.creadaEn) }}. Vigente hasta el
+        {{ fecha(s.solicitudVigenteHasta) }}.
+      </p>
+      <span class="tag">{{ vencida() ? 'Vencida' : 'En revisión' }}</span>
+    </header>
+    <div class="columnas">
+      <div class="columna">
+        @if (identidad()) {
+          <section aria-label="Evidencias de identidad">
+            <h2 class="etiqueta">CÉDULA Y SELFIE</h2>
+            <div class="evidencias">
+              @for (cara of caras; track cara.tipo) {
+                @let e = evidencia(cara.tipo);
+                <article class="foto" [class.selfie]="cara.tipo === 'selfie'">
+                  <h3>{{ cara.titulo }}</h3>
+                  <p class="estado">{{ estadoEvidencia(e) }}</p>
+                  @if (e?.evidenciaId; as id) {
+                    @let imagen = imagenes()[id];
+                    @if (imagen?.url; as url) {
+                      <img [src]="url" [alt]="cara.titulo + ' del cliente'" /><button
+                        class="text-action"
+                        (click)="ampliar(url, cara.titulo)"
+                      >
+                        Ver en grande<span class="sr-only">: {{ cara.titulo }}</span>
+                      </button>
+                    } @else if (imagen?.error) {
+                      <p role="alert">{{ imagen?.error }}</p>
+                      <button class="text-action" (click)="cargarImagen(e!)">
+                        Reintentar imagen<span class="sr-only">: {{ cara.titulo }}</span>
+                      </button>
+                    } @else {
+                      <p role="status">Cargando imagen…</p>
+                    }
+                  } @else {
+                    <p>No hay imagen disponible.</p>
+                  }
+                </article>
+              }
+            </div>
+          </section>
+        }
+        <section class="panel revision" aria-labelledby="revision-titulo">
+          <h2 id="revision-titulo">Lo que revisamos para la solicitud</h2>
+          @for (pendiente of agentes(); track pendiente.codigo) {
+            <label class="pendiente"
+              ><input
+                type="checkbox"
+                [checked]="seleccionados().includes(pendiente.codigo)"
+                [disabled]="!puedeDecidir()"
+                (change)="marcar(pendiente.codigo, $any($event.target).checked)"
+              /><span
+                ><strong>{{ nombre(pendiente.codigo) }}</strong
+                ><small>{{
+                  pendiente.codigo === 'EVIDENCIA_EN_REVISION'
+                    ? 'La cédula y la selfie son de la misma persona.'
+                    : 'Los datos declarados del crédito están completos.'
+                }}</small></span
+              ></label
+            >
+          }
+          @for (pendiente of s.pendientes; track pendiente.codigo) {
+            @if (pendiente.tipo === 'USUARIO') {
+              <p class="nota">
+                Pendiente del cliente: {{ pendiente.mensaje || nombre(pendiente.codigo) }}. No se
+                resuelve desde el Backoffice.
+              </p>
+            }
+          }
+        </section>
+        <section class="panel" aria-labelledby="decisiones-titulo">
+          <h2 id="decisiones-titulo">Decisiones anteriores</h2>
+          @for (decision of s.decisiones; track $index) {
+            <article class="decision">
+              <strong>{{ decision.decision === 'APROBAR' ? 'Aprobación' : 'Rechazo' }}</strong>
+              <p>{{ decision.agente }} · {{ fechaHora(decision.decididaEn) }}</p>
+              <ul>
+                @for (pendiente of decision.pendientes; track pendiente) {
+                  <li>{{ nombre(pendiente) }}</li>
+                }
+              </ul>
+            </article>
+          } @empty {
+            <p class="nota">Ninguna todavía.</p>
+          }
+        </section>
+      </div>
+      <div class="columna">
+        <section aria-labelledby="contratar-titulo">
+          <h2 class="etiqueta" id="contratar-titulo">LO QUE VA A CONTRATAR</h2>
+          <div class="panel">
+            <h3>
+              {{
+                s.coberturas.length > 1 ? 'Vida para el crédito y Tu casa' : 'Vida para el crédito'
+              }}
+            </h3>
+            <dl>
+              @for (c of s.coberturas; track c.codigo) {
+                <div>
+                  <dt>{{ c.codigo === 'VIDA' ? 'Vida para el crédito' : 'Tu casa' }}</dt>
+                  <dd>{{ moneda.format(c.primaNeta) }}</dd>
+                </div>
+                @if (c.iva) {
+                  <div>
+                    <dt>IVA {{ c.codigo === 'HOGAR' ? 'de Tu casa' : 'de Vida' }}</dt>
+                    <dd>{{ moneda.format(c.iva) }}</dd>
+                  </div>
+                }
+              }
+              <div class="total">
+                <dt>Paga cada mes</dt>
+                <dd>{{ moneda.format(s.primaTotalMensual) }}</dd>
+              </div>
+            </dl>
+            <p class="nota">
+              Se cobra con la cuota del crédito. Es la cotización que aceptó el cliente.
+            </p>
+          </div>
+        </section>
+        <section class="panel">
+          <h2>Datos del crédito</h2>
+          <dl>
+            <div>
+              <dt>Entidad acreedora</dt>
+              <dd>{{ s.datosCredito.entidadAcreedora }}</dd>
+            </div>
+            <div>
+              <dt>Valor del crédito</dt>
+              <dd>{{ moneda.format(s.datosCredito.valorCredito) }}</dd>
+            </div>
+            <div>
+              <dt>Saldo insoluto</dt>
+              <dd>{{ moneda.format(s.datosCredito.saldoInsoluto) }}</dd>
+            </div>
+            <div>
+              <dt>Plazo restante</dt>
+              <dd>{{ s.datosCredito.plazoRestanteMeses }} meses</dd>
+            </div>
+          </dl>
+          <p class="nota">
+            {{
+              s.origenDatos === 'DECLARADO'
+                ? 'Datos del crédito declarados por el cliente'
+                : 'Datos del crédito confirmados'
+            }}
+            el {{ fecha(s.cotizacionCreadaEn) }}.
+          </p>
+        </section>
+        <section class="panel decidir">
+          <h2>Tu decisión</h2>
+          <p>Si no queda ningún pendiente, la póliza se emite al aprobar.</p>
+          @if (vencida()) {
+            <p role="status">La solicitud venció. Actualiza la bandeja.</p>
+          }
+          <div class="acciones">
+            <button
+              class="primary"
+              [disabled]="!puedeDecidir() || !seleccionados().length"
+              (click)="aprobar()"
+            >
+              Aprobar</button
+            ><button class="secondary" [disabled]="!puedeDecidir()" (click)="rechazo.set(true)">
+              Rechazar
+            </button>
+          </div>
+          <p class="nota">Queda registrado tu usuario, la hora y los pendientes que marcaste.</p>
+        </section>
+      </div>
+    </div>
+  </div>
+}
+@if (enviando()) {
+  <p role="status">Registrando la decisión…</p>
+}
+@if (rechazo()) {
+  <app-rechazar-solicitud
+    [motivos]="motivos()"
+    (cerrar)="rechazo.set(false)"
+    (confirmar)="rechazar($event)"
+  />
+}
+<dialog #visor class="visor" aria-labelledby="imagen-titulo" (cancel)="cerrarImagen()">
+  <div class="visor-cabecera">
+    <h2 id="imagen-titulo">{{ ampliada()?.titulo }}</h2>
+    <button class="secondary" (click)="cerrarImagen()">Cerrar imagen</button>
+  </div>
+  @if (ampliada(); as imagen) {
+    <img [src]="imagen.url" [alt]="imagen.titulo + ' del cliente, ampliada'" />
+  }
+</dialog>

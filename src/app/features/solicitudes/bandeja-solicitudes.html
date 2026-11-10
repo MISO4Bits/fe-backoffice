@@ -1,0 +1,107 @@
+<div class="encabezado">
+  <h1>Solicitudes en revisión</h1>
+  <button class="text-action" type="button" [disabled]="cargando()" (click)="cargar()">
+    Actualizar
+  </button>
+</div>
+@if (aviso()) {
+  <p class="aviso" role="status">{{ aviso() }}</p>
+}
+@if (error()) {
+  <p class="error" role="alert">{{ error() }}</p>
+  <button class="secondary" (click)="cargar()">Reintentar carga</button>
+}
+@if (cargando()) {
+  <p role="status">
+    Cargando solicitudes y datos de los clientes… {{ filas().length }} encontradas.
+  </p>
+}
+<div class="tabla" [attr.aria-busy]="cargando()">
+  <table>
+    <caption class="sr-only">
+      Solicitudes pendientes de revisión, de la más antigua a la más reciente
+    </caption>
+    <thead>
+      <tr>
+        <th scope="col">Cliente</th>
+        <th scope="col">Documento</th>
+        <th scope="col">Enviada</th>
+        <th scope="col">Pendiente</th>
+        <th scope="col">Espera</th>
+        <th scope="col">Vigente hasta</th>
+        <th scope="col">Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (fila of visibles(); track fila.resumen.polizaId) {
+        <tr>
+          <td>
+            <strong>{{
+              fila.cliente?.nombre ||
+                (fila.errorDetalle ? 'Cliente no disponible' : 'Consultando cliente…')
+            }}</strong>
+            @if (fila.errorDetalle) {
+              <button class="text-action" (click)="reintentar(fila)">Reintentar datos</button>
+            }
+          </td>
+          <td>{{ documento(fila) }}</td>
+          <td>{{ fecha(fila.resumen.creadaEn) }}</td>
+          <td>{{ pendientes(fila) }}</td>
+          <td>{{ espera(fila.resumen.creadaEn) }}</td>
+          <td>{{ fecha(fila.resumen.solicitudVigenteHasta) }}</td>
+          <td>
+            <a
+              class="ver"
+              [routerLink]="['/solicitudes', fila.resumen.polizaId]"
+              [attr.aria-label]="
+                'Ver solicitud de ' + (fila.cliente?.nombre || fila.resumen.polizaId)
+              "
+              >Ver <span aria-hidden="true">↗</span></a
+            >
+          </td>
+        </tr>
+      } @empty {
+        <tr>
+          <td colspan="7">
+            {{
+              cargando()
+                ? 'Consultando la bandeja…'
+                : error()
+                  ? 'No hay resultados disponibles.'
+                  : 'No hay solicitudes pendientes de tu revisión.'
+            }}
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+  <div class="paginacion">
+    <span>
+      @if (cargando() || error()) {
+        {{ filas().length }} solicitudes cargadas; total pendiente de confirmar.
+      } @else {
+        {{ filas().length }} solicitudes · Mostrando
+        {{ filas().length ? (pagina() - 1) * tamano + 1 : 0 }} a
+        {{ pagina() * tamano > filas().length ? filas().length : pagina() * tamano }}
+      }
+    </span>
+    <nav aria-label="Páginas de solicitudes">
+      <span>Página {{ pagina() }} de {{ paginas() }}</span
+      ><button
+        class="secondary"
+        [disabled]="pagina() === 1"
+        (click)="pagina.set(pagina() - 1)"
+        aria-label="Página anterior"
+      >
+        ‹</button
+      ><button
+        class="secondary"
+        [disabled]="pagina() === paginas()"
+        (click)="pagina.set(pagina() + 1)"
+        aria-label="Página siguiente"
+      >
+        ›
+      </button>
+    </nav>
+  </div>
+</div>
