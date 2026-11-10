@@ -49,11 +49,13 @@ describe('Contrato HTTP de Solicitudes', () => {
   it('envía límite y cursor, sin recorrer dos veces', async () => {
     const p = api.pagina();
     const r = http.expectOne('/web/v1/backoffice/solicitudes?limite=100');
-    r.flush({ items: [], siguienteCursor: 'cursor+a' });
-    await p;
+    expect(r.request.method).toBe('GET');
+    const primera = { items: [], siguienteCursor: 'cursor+a' };
+    r.flush(primera);
+    expect(await p).toEqual(primera);
     const siguiente = api.pagina('cursor+a');
     http.expectOne((r) => r.params.get('cursor') === 'cursor+a').flush({ items: [] });
-    await siguiente;
+    expect(await siguiente).toEqual({ items: [] });
   });
   it('codifica el identificador y limpia los detalles cuando cambia la sesión', async () => {
     const p = api.detalle('s/1');

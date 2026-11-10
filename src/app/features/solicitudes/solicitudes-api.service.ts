@@ -15,9 +15,14 @@ import {
 export class SolicitudesApiService {
   private readonly http = inject(HttpClient);
   private readonly sesion = inject(SessionService);
-  private readonly base = `${inject(BFF_BASE_URL).replace(/\/+$/, '')}/v1/backoffice/solicitudes`;
+  private readonly base = `${this.baseUrl()}/v1/backoffice/solicitudes`;
   private readonly detalles = new Map<string, SolicitudDetalle>();
   private version = 0;
+  private baseUrl(): string {
+    let base = inject(BFF_BASE_URL);
+    while (base.endsWith('/')) base = base.slice(0, -1);
+    return base;
+  }
   constructor() {
     let identidad: string | null | undefined;
     effect(() => {
