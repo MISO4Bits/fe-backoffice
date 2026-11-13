@@ -146,13 +146,18 @@ describe('Ingreso y navegación de BITS-363', () => {
     expect(router.url).toBe('/tablero');
   });
 
-  it.each(['/tablero', '/solicitudes', '/siniestros', '/venta', '/no-existe', '/'])(
-    'protege %s sin sesión',
-    async (url) => {
-      await harness.navigateByUrl(url);
-      expect(router.url).toBe('/ingreso');
-    },
-  );
+  it.each([
+    '/tablero',
+    '/solicitudes',
+    '/siniestros',
+    '/siniestros/s-1',
+    '/venta',
+    '/no-existe',
+    '/',
+  ])('protege %s sin sesión', async (url) => {
+    await harness.navigateByUrl(url);
+    expect(router.url).toBe('/ingreso');
+  });
 
   it('muestra solo las tres opciones del Admin y protege Venta', async () => {
     await autenticar('ADMIN');
@@ -174,7 +179,15 @@ describe('Ingreso y navegación de BITS-363', () => {
     expect(Array.from(pantalla().querySelectorAll('nav a'), (a) => a.textContent?.trim())).toEqual([
       'Venta',
     ]);
-    for (const url of ['/tablero', '/solicitudes', '/siniestros', '/ingreso', '/no-existe', '/']) {
+    for (const url of [
+      '/tablero',
+      '/solicitudes',
+      '/siniestros',
+      '/siniestros/s-1',
+      '/ingreso',
+      '/no-existe',
+      '/',
+    ]) {
       await harness.navigateByUrl(url);
       expect(router.url).toBe('/venta');
     }

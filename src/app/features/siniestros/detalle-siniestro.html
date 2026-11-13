@@ -1,0 +1,416 @@
+<button class="text-action volver" type="button" (click)="volver()">← Volver a la bandeja</button>
+@if (cargando()) {
+  <p role="status">Consultando el siniestro…</p>
+}
+@if (error()) {
+  <div class="error" role="alert">
+    <p>{{ error() }}</p>
+    <button class="secondary" (click)="cargar()">Volver a consultar</button>
+  </div>
+}
+@if (siniestro(); as s) {
+  <div [attr.inert]="enviando() || cargando() ? '' : null">
+    <header class="panel cabecera">
+      <span class="etiqueta">SINIESTRO</span>
+      <h1>{{ s.numero }}</h1>
+      <p>
+        {{ s.cliente?.nombre || 'Cliente no disponible' }}
+        @if (s.cliente) {
+          , {{ s.cliente.tipoDocumento === 'CC' ? 'C.C.' : s.cliente.tipoDocumento }}
+          {{ s.cliente.numeroDocumento }}
+        }
+        . {{ s.estado === 'PAGADO' ? 'Pagado' : 'Reportado' }} el
+        {{ fechaHora(s.estado === 'PAGADO' ? s.pago?.pagadoEn || s.actualizadoEn : s.reportadoEn) }}
+      </p>
+      <div class="etiquetas">
+        @if (s.automatico) {
+          <span class="tag">Automático</span>
+        }
+        <span class="tag">{{
+          s.estado === 'EN_ESTUDIO'
+            ? 'En estudio'
+            : s.estado === 'FALTA_INFORMACION'
+              ? 'Falta información'
+              : s.estado === 'PAGADO'
+                ? 'Pagado'
+                : 'Rechazado'
+        }}</span>
+      </div>
+    </header>
+    @if (s.estado === 'EN_ESTUDIO' && s.fechaLimite) {
+      <div class="plazo">
+        <strong>Fecha límite para pagar o rechazar: {{ fecha(s.fechaLimite) }}</strong
+        ><small>Un mes desde la última evidencia del cliente.</small>
+      </div>
+    }
+    <div class="columnas">
+      <div class="columna">
+        <section class="panel">
+          <h2>{{ s.automatico ? 'El sismo' : 'Lo que reportó el cliente' }}</h2>
+          <dl>
+            <div>
+              <dt>Evento</dt>
+              <dd>
+                {{
+                  s.automatico && s.evento
+                    ? 'Terremoto, magnitud ' + s.evento.magnitud + ', en ' + s.evento.municipio
+                    : tipo(s.tipo)
+                }}
+              </dd>
+            </div>
+            <div>
+              <dt>Ocurrió</dt>
+              <dd>{{ fecha(s.fechaOcurrencia) }}</dd>
+            </div>
+          </dl>
+          @if (s.narracion) {
+            <p class="narracion">“{{ s.narracion }}”</p>
+          }
+        </section>
+        @if (s.evidenciaPedida) {
+          <section class="panel">
+            <h2>Lo que pedimos</h2>
+            <p>{{ s.evidenciaPedida.detalle }}</p>
+            <p class="nota">Pedido el {{ fechaHora(s.evidenciaPedida.pedidaEn) }}.</p>
+          </section>
+        }
+        @if (posteriores().length) {
+          <section class="panel">
+            <h2>Lo que envió el cliente ({{ posteriores().length }})</h2>
+            @for (archivo of posteriores(); track archivo.id) {
+              <div class="fila-archivo">
+                <span
+                  ><strong
+                    >{{ archivo.clase === 'FOTO' ? 'Foto' : 'Documento' }} {{ $index + 1 }}</strong
+                  ><small>Entregado el {{ fechaHora(archivo.entregadoEn) }}</small></span
+                ><button
+                  class="text-action"
+                  [disabled]="!imagenes()[archivo.id]?.url"
+                  (click)="abrirImagen(archivo, archivo.clase + ' ' + ($index + 1))"
+                >
+                  Ver
+                </button>
+              </div>
+            }
+          </section>
+        }
+        @if (fotos().length) {
+          <section class="panel">
+            <h2>Fotos ({{ fotos().length }})</h2>
+            <p class="nota">
+              Tomadas con la cámara de la app, con ubicación y hora cuando están disponibles.
+            </p>
+            <div class="fotos">
+              @for (archivo of fotos(); track archivo.id) {
+                <article>
+                  <button
+                    class="miniatura"
+                    [disabled]="!imagenes()[archivo.id]?.url"
+                    (click)="abrirImagen(archivo, 'Foto ' + ($index + 1))"
+                    [attr.aria-label]="'Ver foto ' + ($index + 1) + ' en grande'"
+                  >
+                    @if (imagenes()[archivo.id]?.url; as url) {
+                      <img [src]="url" [alt]="'Evidencia fotográfica ' + ($index + 1)" />
+                    } @else {
+                      <span>{{ imagenes()[archivo.id]?.error || 'Cargando imagen…' }}</span>
+                    }</button
+                  ><small>
+                    @if (
+                      archivo.latitud !== null &&
+                      archivo.latitud !== undefined &&
+                      archivo.longitud !== null &&
+                      archivo.longitud !== undefined
+                    ) {
+                      {{ archivo.latitud }}, {{ archivo.longitud }}
+                    } @else {
+                      Ubicación no disponible
+                    }</small
+                  ><small>{{ fechaHora(archivo.capturadoEn || archivo.entregadoEn) }}</small>
+                </article>
+              }
+            </div>
+          </section>
+        }
+        @if (documentos().length) {
+          <section class="panel">
+            <h2>Documentos ({{ documentos().length }})</h2>
+            @for (archivo of documentos(); track archivo.id) {
+              <div class="fila-archivo">
+                <span
+                  ><strong>Documento {{ $index + 1 }}</strong
+                  ><small>Entregado el {{ fechaHora(archivo.entregadoEn) }}</small></span
+                ><button
+                  class="text-action"
+                  [disabled]="!imagenes()[archivo.id]?.url"
+                  (click)="abrirImagen(archivo, 'Documento ' + ($index + 1))"
+                >
+                  Ver
+                </button>
+              </div>
+            }
+          </section>
+        }
+        @if (s.automatico && s.pago) {
+          <section class="panel">
+            <h2>Orden de pago</h2>
+            <p class="nota">Una sola línea al banco acreedor. No hay decisión de Admin.</p>
+            @for (linea of s.pago.lineas; track $index) {
+              <dl>
+                <div>
+                  <dt>Beneficiario</dt>
+                  <dd>{{ linea.destino || s.saldoCredito.entidad }}</dd>
+                </div>
+                <div>
+                  <dt>Valor</dt>
+                  <dd>{{ moneda(linea.valor) }}</dd>
+                </div>
+              </dl>
+            }
+          </section>
+        }
+        @if (!s.automatico && s.destinoPago) {
+          <section class="panel">
+            <h2>Cómo recibe el pago el cliente</h2>
+            <p class="nota">Lo eligió el cliente al reportar.</p>
+            <dl>
+              <div>
+                <dt>Medio</dt>
+                <dd>{{ medio() }}</dd>
+              </div>
+              <div>
+                <dt>Cuenta</dt>
+                <dd>{{ destino() }}</dd>
+              </div>
+            </dl>
+          </section>
+        }
+        @if (s.decisiones.length) {
+          <section class="panel">
+            <h2>Decisiones anteriores</h2>
+            @for (decision of s.decisiones; track $index) {
+              <p class="decision">
+                <strong>{{
+                  decision.decision === 'PAGAR'
+                    ? 'Pago'
+                    : decision.decision === 'RECHAZAR'
+                      ? 'Rechazo'
+                      : 'Evidencia solicitada'
+                }}</strong>
+                · {{ decision.agente }} · {{ fechaHora(decision.fecha) }}
+                @if (decision.valor) {
+                  · {{ moneda(decision.valor) }}
+                }
+                @if (decision.detalle || decision.motivo) {
+                  <br />{{ decision.detalle || decision.motivo }}
+                }
+              </p>
+            }
+          </section>
+        }
+      </div>
+      <div class="columna">
+        <section class="panel">
+          <h2>Póliza</h2>
+          <dl>
+            <div>
+              <dt>Número</dt>
+              <dd>{{ s.poliza.numero || s.poliza.id }}</dd>
+            </div>
+            <div>
+              <dt>Cobertura</dt>
+              <dd>{{ s.poliza.cobertura === 'VIDA' ? 'Vida para tu crédito' : 'Tu casa' }}</dd>
+            </div>
+            <div>
+              <dt>Suma asegurada</dt>
+              <dd>{{ moneda(s.poliza.sumaAsegurada) }}</dd>
+            </div>
+            @if (s.poliza.cobertura === 'VIDA') {
+              <div>
+                <dt>Beneficiario</dt>
+                <dd>{{ s.saldoCredito.entidad }}, banco acreedor</dd>
+              </div>
+            }
+          </dl>
+        </section>
+        @if (!s.automatico) {
+          <section class="panel">
+            <span class="tag">{{
+              s.saldoCredito.origen === 'OPEN_FINANCE'
+                ? 'OPEN FINANCE, AL RADICAR'
+                : 'PÓLIZA, AL RADICAR'
+            }}</span>
+            <dl>
+              <div>
+                <dt>Saldo del crédito</dt>
+                <dd>{{ moneda(s.saldoCredito.valor) }}</dd>
+              </div>
+              <div>
+                <dt>Banco acreedor</dt>
+                <dd>{{ s.saldoCredito.entidad }}</dd>
+              </div>
+            </dl>
+            <p class="nota">
+              Consultado el {{ fechaHora(s.saldoCredito.consultadoEn) }}. Se guarda con el
+              siniestro.
+            </p>
+          </section>
+        }
+        @if (puedeDecidir()) {
+          <section class="panel decidir">
+            <h2>Tu decisión</h2>
+            <p>
+              {{
+                s.tipo === 'INCAPACIDAD_TOTAL'
+                  ? 'La orden va al banco acreedor por el saldo del crédito.'
+                  : 'Al pagar marcas el daño y escribes el valor.'
+              }}
+            </p>
+            <div class="acciones">
+              <button class="primary" (click)="abrirModal('pagar')">Pagar</button
+              ><button class="secondary" (click)="abrirModal('rechazar')">Rechazar</button>
+            </div>
+            <button class="text-action" (click)="abrirModal('evidencia')">
+              Pedir más evidencia
+            </button>
+            <p class="nota">Queda registrado tu usuario, la hora y lo que decidiste.</p>
+          </section>
+        }
+        @if (!s.automatico && s.estado !== 'EN_ESTUDIO') {
+          <section class="panel decidir">
+            <h2>Estado del siniestro</h2>
+            <p>
+              Este siniestro está
+              {{
+                s.estado === 'PAGADO'
+                  ? 'pagado'
+                  : s.estado === 'RECHAZADO'
+                    ? 'rechazado'
+                    : 'a la espera de información del cliente'
+              }}. No admite decisiones desde esta pantalla.
+            </p>
+          </section>
+        }
+      </div>
+    </div>
+  </div>
+}
+@if (enviando()) {
+  <p role="status">Registrando decisión…</p>
+}
+<dialog #dialogo class="modal" (cancel)="cerrarModal()" aria-labelledby="modal-titulo">
+  @if (modal(); as m) {
+    <form (submit)="confirmar($event)">
+      <h2 id="modal-titulo">
+        {{
+          m === 'pagar'
+            ? siniestro()?.tipo === 'INCAPACIDAD_TOTAL'
+              ? 'Pagar al banco el saldo del crédito'
+              : 'Pagar el siniestro'
+            : m === 'evidencia'
+              ? 'Pedir más evidencia'
+              : 'Rechazar el siniestro'
+        }}
+      </h2>
+      <p class="nota">
+        {{
+          m === 'pagar'
+            ? siniestro()?.tipo === 'INCAPACIDAD_TOTAL'
+              ? 'La orden sale por el saldo guardado al radicar; no se digita ningún valor.'
+              : 'El valor no puede superar la suma asegurada y no tiene deducible.'
+            : m === 'evidencia'
+              ? 'El siniestro pasa a Falta información y el plazo se detiene hasta que el cliente envíe lo que falta.'
+              : 'El siniestro queda cerrado. El cliente recibirá este motivo.'
+        }}
+      </p>
+      @if (m === 'pagar') {
+        @if (siniestro()?.tipo !== 'INCAPACIDAD_TOTAL') {
+          <fieldset>
+            <legend>TIPO DE DAÑO</legend>
+            <label
+              ><input
+                type="radio"
+                name="dano"
+                value="REPARABLE"
+                [checked]="dano() === 'REPARABLE'"
+                (change)="dano.set('REPARABLE')"
+              />
+              Reparable</label
+            ><label
+              ><input
+                type="radio"
+                name="dano"
+                value="PERDIDA_TOTAL"
+                [checked]="dano() === 'PERDIDA_TOTAL'"
+                (change)="dano.set('PERDIDA_TOTAL')"
+              />
+              Pérdida total</label
+            >
+          </fieldset>
+          <label for="valor">Valor a pagar</label
+          ><input
+            id="valor"
+            type="number"
+            min="1"
+            step="1"
+            [max]="siniestro()?.poliza?.sumaAsegurada"
+            [value]="valor() ?? ''"
+            (input)="valor.set($any($event.target).valueAsNumber)"
+            required
+          />
+          <p class="nota">Tope: {{ moneda(siniestro()?.poliza?.sumaAsegurada || 0) }}.</p>
+        }
+        <h3>Orden de pago</h3>
+        @if (siniestro()?.tipo === 'INCAPACIDAD_TOTAL' || valorValido()) {
+          @for (linea of orden(); track $index) {
+            <div class="linea-pago">
+              <span
+                >{{ $index + 1 }}. {{ linea.beneficiario }}
+                @if (linea.beneficiario === 'Cliente') {
+                  <small> · {{ medio() }}: {{ destino() }}</small>
+                }</span
+              ><strong>{{ moneda(linea.valor) }}</strong>
+            </div>
+          }
+        } @else {
+          <p class="nota">Ingresa un valor válido para ver cómo se distribuye el pago.</p>
+        }
+      } @else {
+        <label for="motivo">{{
+          m === 'evidencia' ? 'QUÉ FALTA' : 'MOTIVO QUE VERÁ EL CLIENTE'
+        }}</label
+        ><textarea
+          id="motivo"
+          rows="4"
+          maxlength="2000"
+          required
+          [value]="texto()"
+          (input)="texto.set($any($event.target).value)"
+        ></textarea>
+      }
+      <div class="acciones">
+        <button type="button" class="secondary" (click)="cerrarModal()">Cancelar</button
+        ><button
+          type="submit"
+          class="primary"
+          [disabled]="
+            enviando() ||
+            (m === 'pagar'
+              ? siniestro()?.tipo !== 'INCAPACIDAD_TOTAL' && !valorValido()
+              : !texto().trim())
+          "
+        >
+          {{ m === 'evidencia' ? 'Enviar' : m === 'rechazar' ? 'Rechazar' : 'Pagar' }}
+        </button>
+      </div>
+    </form>
+  }
+</dialog>
+<dialog #visor class="visor" aria-labelledby="imagen-titulo" (cancel)="cerrarImagen()">
+  <div class="visor-cabecera">
+    <h2 id="imagen-titulo">{{ ampliada()?.titulo }}</h2>
+    <button class="secondary" (click)="cerrarImagen()">Cerrar imagen</button>
+  </div>
+  @if (ampliada(); as imagen) {
+    <img [src]="imagen.url" [alt]="imagen.titulo + ' ampliado'" />
+  }
+</dialog>

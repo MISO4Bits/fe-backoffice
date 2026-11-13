@@ -41,8 +41,15 @@ export const routes: Routes = [
         path: 'siniestros',
         title: 'Siniestros · Solventa',
         canActivate: [requiereRol('ADMIN')],
-        data: { titulo: 'Siniestros' },
-        loadComponent: () => import('./features/pendiente/pendiente').then((m) => m.Pendiente),
+        loadComponent: () =>
+          import('./features/siniestros/bandeja-siniestros').then((m) => m.BandejaSiniestros),
+      },
+      {
+        path: 'siniestros/:id',
+        title: 'Detalle del siniestro · Solventa',
+        canActivate: [requiereRol('ADMIN')],
+        loadComponent: () =>
+          import('./features/siniestros/detalle-siniestro').then((m) => m.DetalleSiniestro),
       },
       {
         path: 'venta',

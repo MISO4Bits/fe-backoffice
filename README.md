@@ -136,3 +136,10 @@ Para probar se necesita una cuenta ADMIN y el BFF con BITS-376 disponible. La
 configuración de proxy y arranque local es la misma descrita anteriormente.
 El alcance, la evidencia y las verificaciones pendientes de integración están
 en [docs/bits364-validation.md](docs/bits364-validation.md).
+
+## BITS-365 — Siniestros
+
+El Admin puede consultar siniestros en estudio y pagos automáticos en `/siniestros`,
+abrir su detalle, ampliar evidencias JPEG/PNG y decidir pagar, pedir más evidencia o
+rechazar cuando el siniestro está en estudio. El alcance, las pruebas y los límites
+del contrato están en [docs/bits365-validation.md](docs/bits365-validation.md).

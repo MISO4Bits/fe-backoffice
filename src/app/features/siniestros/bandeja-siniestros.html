@@ -1,0 +1,123 @@
+<div class="encabezado">
+  <h1>Siniestros</h1>
+  <button class="text-action" type="button" [disabled]="cargando()" (click)="cargar()">
+    Actualizar
+  </button>
+</div>
+<nav class="pestanas" aria-label="Tipo de bandeja">
+  <a
+    routerLink="/siniestros"
+    [class.activa]="!automatico()"
+    [attr.aria-current]="!automatico() ? 'page' : null"
+    >En estudio</a
+  >
+  <a
+    routerLink="/siniestros"
+    [queryParams]="{ automatico: true }"
+    [class.activa]="automatico()"
+    [attr.aria-current]="automatico() ? 'page' : null"
+    >Pagos automáticos</a
+  >
+</nav>
+@if (aviso()) {
+  <p class="aviso" role="status">{{ aviso() }}</p>
+}
+@if (error()) {
+  <p class="error" role="alert">{{ error() }}</p>
+  <button class="secondary" (click)="cargar()">Reintentar</button>
+}
+@if (cargando()) {
+  <p role="status">Cargando siniestros…</p>
+}
+<div class="tabla" [attr.aria-busy]="cargando()">
+  <table>
+    <caption class="sr-only">
+      {{
+        automatico()
+          ? 'Pagos automáticos, solo lectura'
+          : 'Siniestros en estudio, ordenados por fecha límite'
+      }}
+    </caption>
+    <thead>
+      <tr>
+        <th scope="col">Número</th>
+        <th scope="col">Tipo de evento</th>
+        <th scope="col">{{ automatico() ? 'Pagado' : 'Reportado' }}</th>
+        <th scope="col">{{ automatico() ? 'Valor' : 'Fecha límite' }}</th>
+        <th scope="col">Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (fila of visibles(); track fila.id) {
+        <tr>
+          <td>
+            <strong>{{ fila.numero }}</strong>
+          </td>
+          <td>{{ tipo(fila.tipo) }}</td>
+          <td>
+            {{
+              automatico() && fechasPago()[fila.id] === undefined
+                ? 'Consultando…'
+                : fecha(automatico() ? fechasPago()[fila.id] : fila.reportadoEn)
+            }}
+          </td>
+          <td>
+            {{
+              automatico()
+                ? montos()[fila.id] === undefined
+                  ? 'Consultando…'
+                  : montos()[fila.id] === null
+                    ? 'No disponible'
+                    : moneda(montos()[fila.id]!)
+                : fecha(fila.fechaLimite)
+            }}
+          </td>
+          <td>
+            <a
+              class="ver"
+              [routerLink]="['/siniestros', fila.id]"
+              [queryParams]="automatico() ? { automatico: true } : {}"
+              [attr.aria-label]="'Ver siniestro ' + fila.numero"
+              >Ver <span aria-hidden="true">↗</span></a
+            >
+          </td>
+        </tr>
+      } @empty {
+        <tr>
+          <td colspan="5">
+            {{
+              cargando()
+                ? 'Consultando la bandeja…'
+                : error()
+                  ? 'No hay resultados disponibles.'
+                  : automatico()
+                    ? 'No hay pagos automáticos.'
+                    : 'No hay siniestros en estudio.'
+            }}
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+  <div class="paginacion">
+    <span>{{ cargando() || error() ? 'Total pendiente de confirmar' : intervalo() }}</span>
+    <nav aria-label="Páginas de siniestros">
+      <span>Página {{ pagina() }} de {{ paginas() }}</span
+      ><button
+        class="secondary"
+        [disabled]="pagina() === 1"
+        (click)="pagina.set(pagina() - 1)"
+        aria-label="Página anterior"
+      >
+        ‹</button
+      ><button
+        class="secondary"
+        [disabled]="pagina() === paginas()"
+        (click)="pagina.set(pagina() + 1)"
+        aria-label="Página siguiente"
+      >
+        ›
+      </button>
+    </nav>
+  </div>
+</div>
