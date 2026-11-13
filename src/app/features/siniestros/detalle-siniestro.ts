@@ -62,8 +62,7 @@ export class DetalleSiniestro implements OnInit, OnDestroy {
       s.estado === 'EN_ESTUDIO' &&
       !this.cargando() &&
       !this.enviando() &&
-      !this.error() &&
-      (!s.fechaLimite || Date.parse(s.fechaLimite) > Date.now())
+      !this.error()
     );
   });
   readonly posteriores = computed(() => {

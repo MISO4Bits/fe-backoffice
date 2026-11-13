@@ -8,6 +8,7 @@
 - Incapacidad total envía `{ "decision": "PAGAR" }`, sin valor ni daño. Hogar exige `REPARABLE` o `PERDIDA_TOTAL` y un valor positivo que no supere la suma asegurada. La vista previa distribuye la pérdida total entre el banco y el cliente; el BFF y svc-core determinan la orden definitiva.
 - Pedir evidencia envía `detalle`; rechazar envía `motivo`. Son diálogos de texto propios de Siniestros. El frontend nunca envía `agente`.
 - Tras decidir o detectar un conflicto, se vuelve a la bandeja y se consulta su estado actualizado. Ante un resultado incierto no se reintenta automáticamente el pago.
+- `fechaLimite` se muestra y ordena la bandeja, pero no bloquea las decisiones mientras el estado sea `EN_ESTUDIO`; el BFF valida el estado al decidir.
 
 ## Contrato y límites
 
@@ -21,7 +22,7 @@ La respuesta de la bandeja no trae fecha ni importe del pago automático. Se con
 
 - `npm run build`: correcto.
 - `npm run lint`: correcto.
-- `npm test -- --watch=false`: 143 pruebas aprobadas; cobertura global superior a 80 % en statements, branches, functions y lines.
+- `npm test -- --watch=false`: 144 pruebas aprobadas; cobertura global superior a 80 % en statements, branches, functions y lines.
 - Playwright local con respuestas ficticias: capturas de B30, B31, B31A, B30A y B36 en `.angular/bits365-visual/`. Se comprobaron la navegación, el modal de pago, el importe automático y la ausencia de botones de decisión en B36. Estas capturas no validan persistencia, órdenes de pago ni notificaciones reales.
 
 Para validar de extremo a extremo en el entorno integrado se necesitan cuentas Admin y siniestros de los tres tipos, incluidos uno que volvió con evidencia y otro automático pagado. La emisión de la orden, la idempotencia y los avisos al cliente pertenecen a svc-core y otros servicios; el frontend presenta la respuesta y evita repetir automáticamente una decisión de resultado incierto.

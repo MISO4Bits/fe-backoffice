@@ -175,6 +175,18 @@ describe('Detalle B31 y B32V', () => {
     expect(api.decidir).toHaveBeenCalledWith('s-1', { decision: 'PAGAR' });
     expect(router.navigate).toHaveBeenCalledWith(['/siniestros'], expect.any(Object));
   });
+  it('permite decidir si el backend aún lo devuelve En estudio aunque la fecha límite haya pasado', async () => {
+    api.detalle.mockResolvedValue({ ...detalle(), fechaLimite: '2020-01-01T00:00:00Z' });
+    fixture.detectChanges();
+    await vi.waitFor(() => expect(fixture.componentInstance.cargando()).toBe(false));
+    fixture.detectChanges();
+    const c = fixture.componentInstance;
+    expect(c.puedeDecidir()).toBe(true);
+    expect(fixture.nativeElement.textContent).toContain('Tu decisión');
+    c.modal.set('pagar');
+    await c.confirmar(new Event('submit'));
+    expect(api.decidir).toHaveBeenCalledWith('s-1', { decision: 'PAGAR' });
+  });
   it('limita el pago de hogar y divide pérdida total entre banco y cliente', async () => {
     api.detalle.mockResolvedValue(detalle('INCENDIO_TERREMOTO'));
     fixture.detectChanges();
