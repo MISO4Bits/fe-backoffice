@@ -13,7 +13,7 @@ describe('Contrato HTTP BITS-365', () => {
       providers: [
         provideHttpClient(),
         provideHttpClientTesting(),
-        { provide: BFF_BASE_URL, useValue: '/web/' },
+        { provide: BFF_BASE_URL, useValue: '/web///' },
       ],
     });
     api = TestBed.inject(SiniestrosApiService);

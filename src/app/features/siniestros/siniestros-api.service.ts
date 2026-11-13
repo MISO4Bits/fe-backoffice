@@ -7,7 +7,13 @@ import { DecisionSiniestro, SiniestroDetalle, SiniestroResumen } from './siniest
 @Injectable({ providedIn: 'root' })
 export class SiniestrosApiService {
   private readonly http = inject(HttpClient);
-  private readonly base = `${inject(BFF_BASE_URL).replace(/\/+$/, '')}/v1/backoffice/siniestros`;
+  private readonly base = `${this.baseUrl()}/v1/backoffice/siniestros`;
+
+  private baseUrl(): string {
+    let base = inject(BFF_BASE_URL);
+    while (base.endsWith('/')) base = base.slice(0, -1);
+    return base;
+  }
 
   bandeja(automatico: boolean): Promise<SiniestroResumen[]> {
     return firstValueFrom(
