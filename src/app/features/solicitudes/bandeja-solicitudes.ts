@@ -1,5 +1,6 @@
 import { Component, computed, inject, OnDestroy, OnInit, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
+import { cargarBandejaSolicitudes } from './cargar-bandeja-solicitudes';
 import { SolicitudesApiService } from './solicitudes-api.service';
 import {
   esPendienteAgente,
@@ -44,40 +45,12 @@ export class BandejaSolicitudes implements OnInit, OnDestroy {
     this.error.set('');
     this.filas.set([]);
     this.pagina.set(1);
-    const filas = new Map<string, FilaSolicitud>();
-    const cursores = new Set<string>();
     try {
-      let cursor: string | undefined;
-      do {
-        const resultado = await this.api.pagina(cursor);
-        if (version !== this.version) return;
-        for (const resumen of resultado.items) {
-          if (resumen.estado === 'PENDIENTE' && resumen.pendientes.some(esPendienteAgente))
-            filas.set(resumen.polizaId, { resumen });
-        }
-        this.publicar(filas);
-        cursor = resultado.siguienteCursor || undefined;
-        if (cursor && cursores.has(cursor)) throw new Error('Cursor repetido');
-        if (cursor) cursores.add(cursor);
-      } while (cursor);
-      const pendientes = [...filas.values()];
-      let indice = 0;
-      const completar = async () => {
-        while (version === this.version && indice < pendientes.length) {
-          const fila = pendientes[indice++];
-          try {
-            const detalle = await this.api.detalle(fila.resumen.polizaId);
-            if (version !== this.version) return;
-            if (!this.api.esperaMiRevision(detalle)) filas.delete(detalle.polizaId);
-            else filas.set(detalle.polizaId, { resumen: detalle, cliente: detalle.cliente });
-          } catch {
-            if (version === this.version)
-              filas.set(fila.resumen.polizaId, { ...fila, errorDetalle: true });
-          }
-          if (version === this.version) this.publicar(filas);
-        }
-      };
-      await Promise.all(Array.from({ length: Math.min(4, pendientes.length) }, completar));
+      await cargarBandejaSolicitudes(
+        this.api,
+        () => version === this.version,
+        (filas) => this.publicar(filas),
+      );
     } catch {
       if (version === this.version)
         this.error.set(
