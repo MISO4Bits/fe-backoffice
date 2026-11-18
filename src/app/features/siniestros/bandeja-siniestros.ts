@@ -3,6 +3,7 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { SiniestrosApiService } from './siniestros-api.service';
 import {
+  esSiniestroPorDecidir,
   fechaSiniestro,
   monedaSiniestro,
   SiniestroResumen,
@@ -57,9 +58,7 @@ export class BandejaSiniestros implements OnInit, OnDestroy {
     try {
       const automatico = this.automatico();
       const filas = (await this.api.bandeja(automatico)).filter((fila) =>
-        automatico
-          ? fila.automatico && fila.estado === 'PAGADO'
-          : !fila.automatico && fila.estado === 'EN_ESTUDIO',
+        automatico ? fila.automatico && fila.estado === 'PAGADO' : esSiniestroPorDecidir(fila),
       );
       if (version !== this.version) return;
       this.filas.set(

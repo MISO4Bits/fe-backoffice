@@ -2,6 +2,9 @@ import { ClienteSolicitud } from '../solicitudes/solicitudes.models';
 
 export type TipoSiniestro = 'INCAPACIDAD_TOTAL' | 'INCENDIO_TERREMOTO' | 'SISMO_PARAMETRICO';
 export type EstadoSiniestro = 'EN_ESTUDIO' | 'FALTA_INFORMACION' | 'PAGADO' | 'RECHAZADO';
+
+export const esSiniestroPorDecidir = (siniestro: SiniestroResumen): boolean =>
+  !siniestro.automatico && siniestro.estado === 'EN_ESTUDIO';
 export interface SiniestroResumen {
   id: string;
   numero: string;
