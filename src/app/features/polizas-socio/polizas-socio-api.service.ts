@@ -26,7 +26,13 @@ export interface PolizasDelSocio {
 @Injectable({ providedIn: 'root' })
 export class PolizasSocioApiService {
   private readonly http = inject(HttpClient);
-  private readonly base = inject(BFF_BASE_URL).replace(/\/+$/, '');
+  private readonly base = this.normalizarBase(inject(BFF_BASE_URL));
+
+  private normalizarBase(base: string): string {
+    let fin = base.length;
+    while (fin > 0 && base[fin - 1] === '/') fin--;
+    return base.slice(0, fin);
+  }
 
   listar() {
     return this.http
