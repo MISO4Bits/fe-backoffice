@@ -52,6 +52,21 @@ export const routes: Routes = [
           import('./features/siniestros/detalle-siniestro').then((m) => m.DetalleSiniestro),
       },
       {
+        path: 'socio/tablero',
+        title: 'Tablero del Socio · Solventa',
+        canActivate: [requiereRol('SOCIO')],
+        data: { vista: 'tablero' },
+        loadComponent: () =>
+          import('./features/polizas-socio/polizas-socio').then((m) => m.PolizasSocio),
+      },
+      {
+        path: 'socio/polizas',
+        title: 'Pólizas vendidas · Solventa',
+        canActivate: [requiereRol('SOCIO')],
+        loadComponent: () =>
+          import('./features/polizas-socio/polizas-socio').then((m) => m.PolizasSocio),
+      },
+      {
         path: 'venta',
         title: 'Nueva venta · Solventa',
         canActivate: [requiereRol('SOCIO')],
