@@ -235,6 +235,86 @@ describe('Ingreso y navegación de BITS-363', () => {
     expect(pantalla().querySelector('app-estado a')?.getAttribute('href')).toBe('/venta');
   });
 
+  it('pagina las pólizas del Socio y combina búsqueda, fechas y estado', async () => {
+    await autenticar('SOCIO');
+    const http = TestBed.inject(HttpTestingController);
+    await harness.navigateByUrl('/socio/polizas');
+    http.expectOne('/web/v1/socio/polizas').flush({
+      items: Array.from({ length: 6 }, (_, i) => ({
+        polizaId: `p-${i + 1}`,
+        estado: i === 5 ? 'DESACTIVADA' : 'EMITIDA',
+        creadaEn: `2026-11-0${i + 1}T13:00:00Z`,
+        primaTotalMensual: 50000,
+        cliente:
+          i === 4
+            ? null
+            : {
+                nombre: i === 0 ? 'Ana Pérez' : `Cliente ${i + 1}`,
+                tipoDocumento: 'CC',
+                ultimosDigitosDocumento: `000${i + 1}`,
+              },
+      })),
+      consultadoEn: '2026-11-06T13:00:00Z',
+      incompleta: false,
+    });
+    harness.detectChanges();
+
+    const clientes = () =>
+      Array.from(pantalla().querySelectorAll('tbody tr td:first-child'), (celda) =>
+        celda.textContent?.trim(),
+      );
+    const seleccionar = (selector: string, valor: string) => {
+      const campo = pantalla().querySelector<HTMLSelectElement>(selector)!;
+      campo.value = valor;
+      campo.dispatchEvent(new Event('change'));
+      harness.detectChanges();
+    };
+    expect(clientes()).toEqual([
+      'Cliente 6',
+      'No disponible',
+      'Cliente 4',
+      'Cliente 3',
+      'Cliente 2',
+    ]);
+    pantalla().querySelector<HTMLButtonElement>('button[aria-label="Página siguiente"]')!.click();
+    harness.detectChanges();
+    expect(clientes()).toEqual(['Ana Pérez']);
+
+    seleccionar('.filtros select', 'antiguas');
+    expect(clientes()).toEqual([
+      'Ana Pérez',
+      'Cliente 2',
+      'Cliente 3',
+      'Cliente 4',
+      'No disponible',
+    ]);
+    escribir('.filtros input[type="search"]', '  perez ');
+    harness.detectChanges();
+    expect(clientes()).toEqual(['Ana Pérez']);
+    escribir('.filtros input[type="search"]', '0006');
+    harness.detectChanges();
+    expect(clientes()).toEqual(['Cliente 6']);
+    escribir('.filtros input[type="search"]', '');
+    escribir('.filtros label:nth-child(3) input', '2026-11-02');
+    escribir('.filtros label:nth-child(4) input', '2026-11-04');
+    harness.detectChanges();
+    expect(clientes()).toEqual(['Cliente 2', 'Cliente 3', 'Cliente 4']);
+
+    pantalla().querySelector<HTMLButtonElement>('.filtros button')!.click();
+    harness.detectChanges();
+    expect(clientes()[0]).toBe('Cliente 6');
+    const estado = '.filtros label:last-child select';
+    seleccionar(estado, 'renovaciones');
+    await harness.fixture.whenStable();
+    harness.detectChanges();
+    expect(clientes()).toEqual(['Cliente 6']);
+    seleccionar(estado, 'todos');
+    await harness.fixture.whenStable();
+    harness.detectChanges();
+    expect(clientes()).toHaveLength(5);
+    http.verify({ ignoreCancelled: true });
+  });
+
   it('permite reintentar una consulta de pólizas y avisa si el resultado es parcial', async () => {
     await autenticar('SOCIO');
     const http = TestBed.inject(HttpTestingController);
