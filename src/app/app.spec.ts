@@ -3,7 +3,7 @@ import { provideRouter, Router } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
 import { vi } from 'vitest';
 import { provideHttpClient } from '@angular/common/http';
-import { provideHttpClientTesting } from '@angular/common/http/testing';
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { routes } from './app.routes';
 import { AUTH_GATEWAY, CuentaInterna, FalloIngreso, Rol } from './core/auth/auth.gateway';
 import { SessionService } from './core/auth/session.service';
@@ -152,6 +152,8 @@ describe('Ingreso y navegación de BITS-363', () => {
     '/siniestros',
     '/siniestros/s-1',
     '/venta',
+    '/socio/tablero',
+    '/socio/polizas',
     '/no-existe',
     '/',
   ])('protege %s sin sesión', async (url) => {
@@ -168,15 +170,21 @@ describe('Ingreso y navegación de BITS-363', () => {
     ]);
     await harness.navigateByUrl('/venta');
     expect(router.url).toBe('/tablero');
+    for (const url of ['/socio/tablero', '/socio/polizas']) {
+      await harness.navigateByUrl(url);
+      expect(router.url).toBe('/tablero');
+    }
     await harness.navigateByUrl('/solicitudes');
     expect(pantalla().querySelector('h1')?.textContent).toBe('Solicitudes en revisión');
     await harness.navigateByUrl('/siniestros');
     expect(pantalla().querySelector('h1')?.textContent).toBe('Siniestros');
   });
 
-  it('muestra solo Venta al Socio y protege las rutas del Admin', async () => {
+  it('muestra el menú del Socio y protege las rutas del Admin', async () => {
     await autenticar('SOCIO');
     expect(Array.from(pantalla().querySelectorAll('nav a'), (a) => a.textContent?.trim())).toEqual([
+      'Tablero',
+      'Pólizas',
       'Venta',
     ]);
     for (const url of [
@@ -192,6 +200,73 @@ describe('Ingreso y navegación de BITS-363', () => {
       expect(router.url).toBe('/venta');
     }
     expect(pantalla().querySelector('.sale-card button')?.hasAttribute('disabled')).toBe(true);
+  });
+
+  it('abre la lista filtrada desde el tablero y permite ir a Venta desde el estado vacío', async () => {
+    await autenticar('SOCIO');
+    const http = TestBed.inject(HttpTestingController);
+    const corte = '2026-11-03T13:00:00Z';
+    await harness.navigateByUrl('/socio/tablero');
+    const resultado = {
+      items: [
+        {
+          polizaId: 'p-1',
+          estado: 'EMITIDA',
+          creadaEn: corte,
+          primaTotalMensual: 50000,
+          cliente: { nombre: 'Ana Pérez', tipoDocumento: 'CC', ultimosDigitosDocumento: '0001' },
+        },
+      ],
+      consultadoEn: corte,
+      incompleta: false,
+    };
+    http.expectOne({ method: 'GET', url: '/web/v1/socio/polizas' }).flush(resultado);
+    harness.detectChanges();
+    expect(pantalla().querySelector('.page-intro')?.textContent).toContain('3 de noviembre');
+    const tarjetas = pantalla().querySelectorAll<HTMLAnchorElement>('.tarjeta');
+    expect(Array.from(tarjetas, (a) => a.querySelector('strong')?.textContent)).toEqual(['1', '0']);
+    await harness.navigateByUrl(tarjetas[1].getAttribute('href')!);
+    http.expectOne('/web/v1/socio/polizas').flush(resultado);
+    harness.detectChanges();
+    expect(router.url).toBe('/socio/polizas?estado=renovaciones');
+    expect(
+      pantalla().querySelector<HTMLSelectElement>('.filtros label:last-child select')?.value,
+    ).toBe('renovaciones');
+    expect(pantalla().querySelector('app-estado a')?.getAttribute('href')).toBe('/venta');
+  });
+
+  it('permite reintentar una consulta de pólizas y avisa si el resultado es parcial', async () => {
+    await autenticar('SOCIO');
+    const http = TestBed.inject(HttpTestingController);
+    await harness.navigateByUrl('/socio/tablero');
+    const url = '/web/v1/socio/polizas';
+    http.expectOne(url).flush({}, { status: 503, statusText: 'Service Unavailable' });
+    harness.detectChanges();
+    expect(pantalla().querySelector('[role="alert"]')?.textContent).toContain(
+      'No pudimos consultar tus pólizas',
+    );
+
+    pantalla().querySelector<HTMLButtonElement>('main button.primary')!.click();
+    http.expectOne(url).flush({
+      items: [
+        {
+          polizaId: 'p-1',
+          estado: 'DESACTIVADA',
+          creadaEn: '2026-11-03T13:00:00Z',
+          primaTotalMensual: 50000,
+        },
+      ],
+      consultadoEn: '2026-11-03T13:00:00Z',
+      incompleta: true,
+    });
+    harness.detectChanges();
+    expect(pantalla().querySelector('main [role="status"]')?.textContent).toContain(
+      'lista parcial',
+    );
+    expect(
+      Array.from(pantalla().querySelectorAll('.tarjeta strong'), (cifra) => cifra.textContent),
+    ).toEqual(['Al menos 1', '1']);
+    http.verify({ ignoreCancelled: true });
   });
 
   it.each(['ADMIN', 'SOCIO'] as const)(

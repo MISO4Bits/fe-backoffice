@@ -1,0 +1,171 @@
+<h1>{{ tablero ? 'Cómo van tus ventas' : 'Pólizas vendidas' }}</h1>
+@if (error()) {
+  <p role="alert">No pudimos consultar tus pólizas.</p>
+  <button type="button" class="primary" (click)="cargar()">Volver a intentar</button>
+} @else if (datos(); as resultado) {
+  @if (tablero) {
+    <p class="page-intro">Corte al {{ corte() }}</p>
+  }
+  @if (resultado.incompleta) {
+    <p role="status">
+      La consulta devolvió una lista parcial. Las cifras y los resultados pueden estar incompletos.
+    </p>
+  }
+  @if (tablero) {
+    <div class="tarjetas">
+      <a class="tarjeta" routerLink="/socio/polizas">
+        <h2>Pólizas vendidas</h2>
+        <strong>{{ resultado.incompleta ? 'Al menos ' : '' }}{{ polizas().length }}</strong>
+        <p>Creadas en tus ventas.</p>
+        <span>Ver la lista ›</span>
+      </a>
+      <a class="tarjeta" routerLink="/socio/polizas" [queryParams]="{ estado: 'renovaciones' }">
+        <h2>Renovaciones rechazadas</h2>
+        <strong>{{ renovaciones().length }}</strong>
+        <p>
+          Incluye las pólizas ya desactivadas. Puede haber rechazos pendientes de desactivación.
+        </p>
+        <span>Ver la lista ›</span>
+      </a>
+    </div>
+  } @else {
+    <div class="filtros">
+      <label
+        >Buscar
+        <input
+          #buscar
+          type="search"
+          placeholder="Nombre o últimos 4 dígitos"
+          [value]="busqueda()"
+          (input)="busqueda.set(buscar.value); pagina.set(1)"
+        />
+      </label>
+      <label
+        >Ordenar por
+        <select #ordenar [value]="orden()" (change)="orden.set(ordenar.value); pagina.set(1)">
+          <option value="recientes">Más recientes primero</option>
+          <option value="antiguas">Más antiguas primero</option>
+        </select>
+      </label>
+      <label
+        >Vendida desde
+        <input
+          #fechaDesde
+          type="date"
+          [value]="desde()"
+          (input)="desde.set(fechaDesde.value); pagina.set(1)"
+        />
+      </label>
+      <label
+        >Vendida hasta
+        <input
+          #fechaHasta
+          type="date"
+          [value]="hasta()"
+          (input)="hasta.set(fechaHasta.value); pagina.set(1)"
+        />
+      </label>
+      <button class="limpiar" type="button" routerLink="/socio/polizas" (click)="limpiar()">
+        Limpiar
+      </button>
+      <label
+        >Estado
+        <select
+          #estado
+          [value]="rechazadas() ? 'renovaciones' : 'todos'"
+          (change)="cambiarEstado(estado.value)"
+        >
+          <option value="todos">Todos</option>
+          <option value="renovaciones">Renov. rechazadas</option>
+        </select>
+      </label>
+    </div>
+    @if (rechazadas()) {
+      <p class="page-intro">Esta vista incluye las pólizas ya desactivadas.</p>
+    }
+    <div class="tabla">
+      <table aria-label="Pólizas vendidas">
+        <thead>
+          <tr>
+            <th scope="col">Cliente</th>
+            <th scope="col">Documento</th>
+            <th scope="col">Fecha</th>
+            <th scope="col">Banco</th>
+            <th scope="col">Prima mensual</th>
+            <th scope="col">Estado</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (poliza of visibles(); track poliza.polizaId) {
+            <tr>
+              <td>{{ poliza.cliente?.nombre || 'No disponible' }}</td>
+              <td>
+                @if (poliza.cliente; as cliente) {
+                  {{ cliente.tipoDocumento === 'CC' ? 'C.C.' : cliente.tipoDocumento }}
+                  ****{{ cliente.ultimosDigitosDocumento }}
+                } @else {
+                  No disponible
+                }
+              </td>
+              <td>{{ fecha(poliza.creadaEn) }}</td>
+              <td>No disponible</td>
+              <td>{{ moneda(poliza.primaTotalMensual) }}</td>
+              <td>
+                <span class="estado">{{ etiquetas[poliza.estado] }}</span>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="6">
+                <app-estado
+                  tipo="vacio"
+                  [titulo]="
+                    rechazadas()
+                      ? 'No hay pólizas desactivadas con estos filtros'
+                      : 'No hay pólizas con estos filtros'
+                  "
+                  [descripcion]="
+                    resultado.incompleta
+                      ? 'La consulta fue parcial.'
+                      : 'Puedes ajustar los filtros o iniciar una nueva venta.'
+                  "
+                  ruta="/venta"
+                  accion="Nueva venta"
+                />
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+      @if (filtradas().length) {
+        <div class="paginador">
+          <span
+            >Mostrando {{ inicio() + 1 }} a {{ inicio() + visibles().length }} de
+            {{ filtradas().length }} pólizas</span
+          >
+          <div>
+            <span>Página {{ paginaActual() }} de {{ paginas() }}</span>
+            <button
+              type="button"
+              aria-label="Página anterior"
+              [disabled]="paginaActual() === 1"
+              (click)="pagina.set(paginaActual() - 1)"
+            >
+              ‹
+            </button>
+            <button
+              type="button"
+              aria-label="Página siguiente"
+              [disabled]="paginaActual() === paginas()"
+              (click)="pagina.set(paginaActual() + 1)"
+            >
+              ›
+            </button>
+          </div>
+        </div>
+      }
+    </div>
+  }
+} @else {
+  <p role="status">Consultando tus pólizas…</p>
+}
