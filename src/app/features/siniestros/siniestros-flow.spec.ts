@@ -245,21 +245,48 @@ describe('Detalle B31 y B32V', () => {
         longitud: -74,
       },
       { id: 'doc-1', clase: 'DOCUMENTO', entregadoEn: '2026-11-03T11:00:00Z' },
+      {
+        id: 'foto-2',
+        clase: 'FOTO',
+        capturadoEn: '2026-11-14T03:00:49Z',
+        entregadoEn: '2026-11-14T03:01:00Z',
+        latitud: 4.6498,
+        longitud: -74.0548,
+      },
+      {
+        id: 'foto-3',
+        clase: 'FOTO',
+        entregadoEn: '2026-11-14T03:02:00Z',
+        latitud: 0,
+        longitud: null,
+      },
     ];
     api.detalle.mockResolvedValue(s);
     api.imagen.mockResolvedValue(new Blob(['foto'], { type: 'image/png' }));
     fixture.detectChanges();
     await vi.waitFor(() =>
-      expect(Object.keys(fixture.componentInstance.imagenes()).length).toBe(2),
+      expect(Object.keys(fixture.componentInstance.imagenes()).length).toBe(4),
     );
     await vi.waitFor(() =>
       expect(fixture.componentInstance.imagenes()['doc-1']?.url).toBe('blob:imagen'),
     );
     fixture.detectChanges();
     expect(fixture.nativeElement.textContent).toContain('Falta fachada');
-    expect(fixture.nativeElement.textContent).toContain('Lo que envió el cliente (1)');
-    expect(fixture.nativeElement.textContent).toContain('Sofía Restrepo');
+    const pantalla: HTMLElement = fixture.nativeElement;
+    const paneles = Array.from(pantalla.querySelectorAll('section.panel'));
+    const entregas = paneles.find((panel) =>
+      panel.querySelector('h2')?.textContent?.includes('Lo que envió el cliente (3)'),
+    );
+    const fotos = paneles.find((panel) => panel.querySelector('h2')?.textContent === 'Fotos (3)');
     const c = fixture.componentInstance;
+    for (const panel of [entregas, fotos]) {
+      expect(panel?.textContent).toContain('4.6498, -74.0548');
+      expect(panel?.textContent).toContain(`Capturada el ${c.fechaHora('2026-11-14T03:00:49Z')}`);
+      expect(panel?.textContent).toContain('Ubicación no disponible');
+      expect(panel?.textContent).toContain('Hora de captura no disponible');
+    }
+    expect(entregas?.textContent).toContain(`Entregado el ${c.fechaHora('2026-11-14T03:01:00Z')}`);
+    expect(fixture.nativeElement.textContent).toContain('Sofía Restrepo');
     c.abrirImagen(s.archivos[1], 'Documento 1');
     expect(c.ampliada()?.titulo).toBe('Documento 1');
     c.cerrarImagen();
