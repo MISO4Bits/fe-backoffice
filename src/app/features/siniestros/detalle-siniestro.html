@@ -82,7 +82,11 @@
                 <span
                   ><strong
                     >{{ archivo.clase === 'FOTO' ? 'Foto' : 'Documento' }} {{ $index + 1 }}</strong
-                  ><small>Entregado el {{ fechaHora(archivo.entregadoEn) }}</small></span
+                  ><small>Entregado el {{ fechaHora(archivo.entregadoEn) }}</small>
+                  @if (archivo.clase === 'FOTO') {
+                    <small>{{ capturaFoto(archivo) }}</small>
+                    <small>{{ ubicacionFoto(archivo) }}</small>
+                  }</span
                 ><button
                   class="text-action"
                   [disabled]="!imagenes()[archivo.id]?.url"
@@ -113,19 +117,10 @@
                       <img [src]="url" [alt]="'Evidencia fotográfica ' + ($index + 1)" />
                     } @else {
                       <span>{{ imagenes()[archivo.id]?.error || 'Cargando imagen…' }}</span>
-                    }</button
-                  ><small>
-                    @if (
-                      archivo.latitud !== null &&
-                      archivo.latitud !== undefined &&
-                      archivo.longitud !== null &&
-                      archivo.longitud !== undefined
-                    ) {
-                      {{ archivo.latitud }}, {{ archivo.longitud }}
-                    } @else {
-                      Ubicación no disponible
-                    }</small
-                  ><small>{{ fechaHora(archivo.capturadoEn || archivo.entregadoEn) }}</small>
+                    }
+                  </button>
+                  <small>{{ ubicacionFoto(archivo) }}</small>
+                  <small>{{ capturaFoto(archivo) }}</small>
                 </article>
               }
             </div>

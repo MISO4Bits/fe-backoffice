@@ -76,8 +76,22 @@ export class DetalleSiniestro implements OnInit, OnDestroy {
     const posteriores = new Set(this.posteriores().map((a) => a.id));
     return s?.archivos.filter((a) => !posteriores.has(a.id)) ?? [];
   });
-  readonly fotos = computed(() => this.iniciales().filter((a) => a.clase === 'FOTO'));
+  readonly fotos = computed(
+    () => this.siniestro()?.archivos.filter((a) => a.clase === 'FOTO') ?? [],
+  );
   readonly documentos = computed(() => this.iniciales().filter((a) => a.clase === 'DOCUMENTO'));
+
+  ubicacionFoto({ latitud, longitud }: ArchivoSiniestro): string {
+    return latitud != null && longitud != null
+      ? `${latitud}, ${longitud}`
+      : 'Ubicación no disponible';
+  }
+
+  capturaFoto({ capturadoEn }: ArchivoSiniestro): string {
+    return capturadoEn
+      ? `Capturada el ${this.fechaHora(capturadoEn)}`
+      : 'Hora de captura no disponible';
+  }
   readonly valorValido = computed(() => {
     const s = this.siniestro();
     const valor = this.valor();
